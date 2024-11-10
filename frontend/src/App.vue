@@ -1,21 +1,25 @@
 <template>
   <div id="app">
-    <NavBar /> <!-- Ваш компонент навигации -->
-    <router-view /> <!-- Здесь будут отображаться компоненты в зависимости от маршрута -->
+    <NavBar v-if="!hideNavBar" />
+    <router-view />
   </div>
 </template>
 
 <script>
-import NavBar from './components/NavBar.vue'; // Импортируем NavBar
+import NavBar from './components/NavBar.vue';
 
 export default {
   name: 'App',
   components: {
     NavBar
+  },
+  computed: {
+    hideNavBar() {
+      return this.$route.meta.hideNavBar;
+    }
   }
 };
 </script>
 
 <style>
-/* Добавьте глобальные стили, если необходимо */
 </style>

@@ -3,29 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ваше приложение</title>
-    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <title>Банк</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
     <script>
-        // Функция для проверки авторизации пользователя
         function isAuthenticated() {
-            // Здесь вы можете использовать вашу логику для проверки авторизации
-            // Например, проверка наличия токена в localStorage
-            return localStorage.getItem('authToken') !== null;
+            return localStorage.getItem('authToken');
         }
 
-        // Перенаправление на нужную страницу
         function redirectToPage() {
-            if (false) {
-                window.location.href = '/#/'; // Перенаправление на главную страницу (Main)
-            } else {
-                window.location.href = '/#/login'; // Перенаправление на страницу входа
+            const currentPath = window.location.pathname;
+            if (isAuthenticated() && currentPath === '/login') {
+                window.location.href = '/';
+            } else if (!isAuthenticated() && currentPath !== '/login') {
+                window.location.href = '/login'; 
             }
         }
-        // Выполняем перенаправление при загрузке страницы
         window.onload = redirectToPage;
     </script>
 </head>
 <body>
-    <div id="app"></div> <!-- Здесь будет монтироваться ваше Vue приложение -->
+    <div id="app"></div> 
 </body>
 </html>

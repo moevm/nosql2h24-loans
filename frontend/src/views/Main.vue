@@ -29,12 +29,12 @@ h2 {
 }
 
 ul {
-  list-style-type: none; /* Убираем маркеры списка */
+  list-style-type: none; 
   padding: 0;
 }
 
 li {
-  text-align: center; /* Центрируем текст ссылок */
-  margin: 10px 0; /* Отступы между ссылками */
+  text-align: center;
+  margin: 10px 0;
 }
 </style>

@@ -12,5 +12,4 @@ export default {
 </script>
 
 <style scoped>
-/* Добавьте стили для страницы кредитов, если необходимо */
 </style>
