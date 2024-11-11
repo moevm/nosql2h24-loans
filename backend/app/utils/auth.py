@@ -1,6 +1,5 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
-from datetime import datetime, timedelta
 from flask import current_app, request
 from functools import wraps
 
@@ -13,12 +12,11 @@ def verify_password(password, hashed_password):
     return check_password_hash(hashed_password, password)
 
 # Генерация JWT токена
-def generate_token(user_id, expires_in=600):
-    payload = {
-        "user_id": user_id,
-        "exp": datetime.utcnow() + timedelta(seconds=expires_in)
-    }
-    return jwt.encode(payload, current_app.config["SECRET_KEY"], algorithm="HS256")
+def generate_token(user_id):
+    token = jwt.encode({
+        'user_id': user_id,
+    }, key=user_id, algorithm='HS256')
+    return token
 
 # Проверка JWT токена
 def verify_token(token):

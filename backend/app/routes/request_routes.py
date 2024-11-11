@@ -11,6 +11,8 @@ def create_credit_request():
     client_id = data.get('client_id')
     loan_id = data.get('loan_id')
     
+    print(f"Пришел запрос на кредит: ", data)
+    
     if not client_id or not loan_id:
         return jsonify({"error": "client_id and loan_id are required"}), 400
 
