@@ -7,10 +7,10 @@
 </template>
 
 <script>
-import Button from '../components/Button.vue';
+import Button from '../../components/Button.vue';
 
 export default {
-  name: 'Profile',
+  name: 'ClientProfile',
   components: {
     Button
   },

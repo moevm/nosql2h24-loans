@@ -19,6 +19,7 @@ import Button from '../components/Button.vue';
 import axios from 'axios';
 
 export default {
+  name: 'Login',
   components: {
     Button
   },
@@ -41,7 +42,7 @@ export default {
           localStorage.setItem('authToken', response.data.token);
           localStorage.setItem('userId', response.data.userId);
           localStorage.setItem('userType', response.data.userType);
-          this.$router.push('/');
+          this.$router.push(`/${responce.data.userType}/main`);
         }
       } 
       catch (error) {

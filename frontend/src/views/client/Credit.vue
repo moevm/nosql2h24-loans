@@ -7,7 +7,7 @@
 
 <script>
 export default {
-  name: 'Credit'
+  name: 'ClientCredit'
 };
 </script>
 

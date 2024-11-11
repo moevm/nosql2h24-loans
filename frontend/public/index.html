@@ -13,7 +13,7 @@
         function redirectToPage() {
             const currentPath = window.location.pathname;
             if (isAuthenticated() && currentPath === '/login') {
-                window.location.href = '/';
+                window.location.href = '/client/main';
             } else if (!isAuthenticated() && currentPath !== '/login') {
                 window.location.href = '/login'; 
             }

@@ -7,7 +7,7 @@
   
   <script>
   export default {
-    name: 'Request'
+    name: 'ClientRequest'
   };
   </script>
   
