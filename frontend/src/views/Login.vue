@@ -35,14 +35,13 @@ export default {
         const response = await axios.post('http://127.0.0.1:5000/login', {
           email: this.email,
           password: this.password
-          
         });
-
+        
         if (response.data.token) {
-          localStorage.setItem('authToken', response.data.token);
+          localStorage.setItem('authToken', true);
           localStorage.setItem('userId', response.data.userId);
           localStorage.setItem('userType', response.data.userType);
-          this.$router.push(`/${responce.data.userType}/main`);
+          this.$router.push(`/${response.data.userType}/main`);
         }
       } 
       catch (error) {
@@ -51,6 +50,7 @@ export default {
         } 
         else {
           alert('Произошла ошибка. Пожалуйста, попробуйте позже.');
+          console.log(error);
         }
       }
     }

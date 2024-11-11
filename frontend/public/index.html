@@ -9,15 +9,17 @@
         function isAuthenticated() {
             return localStorage.getItem('authToken');
         }
-
         function redirectToPage() {
             const currentPath = window.location.pathname;
-            if (isAuthenticated() && currentPath === '/login') {
-                window.location.href = '/client/main';
-            } else if (!isAuthenticated() && currentPath !== '/login') {
+            if (currentPath === '/') { 
                 window.location.href = '/login'; 
+            } else if (isAuthenticated() && currentPath === '/login') {
+                window.location.href = '/client/main'; 
+            } else if (!isAuthenticated() && currentPath !== '/login') {
+                window.location.href = '/login';
             }
         }
+
         window.onload = redirectToPage;
     </script>
 </head>

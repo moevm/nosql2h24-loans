@@ -125,12 +125,14 @@ export default {
         loanAmount: this.loanAmount,
         loanTerm: this.loanTerm,
         coBorrowers: this.coBorrowers,
-        collateral: this.collateral
+        collateral: this.collateral,
+        clientId: localStorage.getItem('clientId') || null
       };
 
       try {
         const response = await axios.post('http://127.0.0.1:5000/credit_request', loanData);
         console.log('Заявка на кредит отправлена:', response.data);
+        console.log(loanData);
         alert('Заявка на кредит успешно отправлена!');
       } catch (error) {
         console.error('Ошибка при отправке заявки на кредит:', error);
