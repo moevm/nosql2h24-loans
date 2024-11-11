@@ -16,6 +16,7 @@
 
 <script>
 import Button from '../components/Button.vue';
+import axios from 'axios';
 
 export default {
   components: {
@@ -28,13 +29,29 @@ export default {
     };
   },
   methods: {
-    submitForm() {
-      if (this.email === 'user@example.com' && this.password === '123') {
-        localStorage.setItem('authToken', true);
-        this.$router.push('/');
-      } 
-      else {
-        alert('Неверный email или пароль');
+    async submitForm() {
+      try {
+// поменять '/api/login' на нужный
+        const response = await axios.post('/api/login', {
+          email: this.email,
+          password: this.password
+        });
+
+        if (response.data.token) {
+          localStorage.setItem('authToken', response.data.token);
+          this.$router.push('/');
+        } 
+        else {
+          alert('Неверный email или пароль');
+        }
+      } catch (error) {
+// надо чтоб на бэке кинули ошибку
+        if (error.response && error.response.status === 401) {
+          alert('Неверный email или пароль'); 
+        } 
+        else {
+          alert('Произошла ошибка. Пожалуйста, попробуйте позже.');
+        }
       }
     }
   }

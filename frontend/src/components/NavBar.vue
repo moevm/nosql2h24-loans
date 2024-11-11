@@ -1,7 +1,7 @@
 <template>
   <nav>
     <ul>
-      <li><router-link to="/">Главная</router-link></li>
+      <li><router-link to="/">SCAM-BANK</router-link></li>
       <li><router-link to="/credit">Кредиты</router-link></li>
       <li><router-link to="/request">Заявки</router-link></li>
       <li><router-link to="/profile">Профиль</router-link></li>
@@ -17,7 +17,7 @@ export default {
 
 <style scoped>
 nav {
-  background-color: #333;
+  background-color: #B6B6B6;
   padding: 2%;
 }
 
@@ -34,7 +34,7 @@ li {
 }
 
 a {
-  color: white;
+  color: #9A1750;
   text-decoration: none;
 }
 
