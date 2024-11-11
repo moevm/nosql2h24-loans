@@ -4,7 +4,7 @@ from datetime import datetime
 from bson import ObjectId
 from backend.app.models import Credit, CreditHistory, CreditRequest, Client, Admin, InteractionHistory
 
-connect(db="client_database", host="localhost", port=27017)
+connect(db="credit_database", host="localhost", port=27017)
 
 def create_sample_data():
 

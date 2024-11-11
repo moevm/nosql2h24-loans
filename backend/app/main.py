@@ -10,7 +10,7 @@ app = Flask(__name__)
 CORS(app)
 
 # Подключение к MongoDB
-connect('client_database')
+connect('credit_database')
 
 app.register_blueprint(auth_routes_bp)
 app.register_blueprint(request_routes_bp)

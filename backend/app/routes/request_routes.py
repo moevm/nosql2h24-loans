@@ -13,7 +13,7 @@ def create_credit_request():
     print(f"Пришел запрос на кредит: ", data)
     
     client_id = data.get('clientId')
-    request_time = datetime.utcnow()
+    request_time = data.get('requestTime')
     loan_type = data.get('loanType')
     loan_amount = data.get('loanAmount')
     expiration_time = data.get('expirationTime')

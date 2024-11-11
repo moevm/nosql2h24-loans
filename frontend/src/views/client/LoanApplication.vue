@@ -141,7 +141,8 @@ export default {
         expirationTime: this.expirationTime,
         coBorrowers: this.coBorrowers,
         deposit: this.deposit,
-        clientId: this.clientId
+        clientId: this.clientId,
+        requestTime: new Date()
       };
 
       try {

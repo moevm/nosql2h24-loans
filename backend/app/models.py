@@ -1,5 +1,5 @@
 from mongoengine import (
-    Document, EmbeddedDocument, StringField, EmailField, DateField, 
+    Document, EmbeddedDocument, StringField, EmailField, DateField, DateTimeField,
     FloatField, IntField, BooleanField, ListField, EmbeddedDocumentField, ObjectIdField
 )
 from datetime import datetime
@@ -8,7 +8,7 @@ class CreditHistory(EmbeddedDocument):
     _id = ObjectIdField(required=True)
     loan_id = ObjectIdField(required=True)
     status = StringField(choices=["opened", "expired", "closed"], required=True)
-    closing_date = DateField()
+    closing_date = DateTimeField(default=datetime.utcnow())
 
 class Client(Document):
     _id = ObjectIdField(required=True, primary_key=True)
@@ -33,7 +33,7 @@ class Client(Document):
 class InteractionHistory(EmbeddedDocument):
     _id = ObjectIdField(required=True)
     credit_request_id = ObjectIdField(required=True)
-    processing_date = DateField(default=datetime.utcnow())
+    processing_date = DateTimeField(default=datetime.utcnow())
     decision = BooleanField()
 
 class Admin(Document):
@@ -51,7 +51,7 @@ class Admin(Document):
 class Credit(Document):
     _id = ObjectIdField(required=True, primary_key=True)
     loan_name = StringField(required=True)
-    opening_date = DateField(default=datetime.utcnow())
+    opening_date = DateTimeField(default=datetime.utcnow())
     expiration_time = IntField()
     amount = FloatField()
     interest_rate = FloatField()
@@ -66,5 +66,5 @@ class CreditRequest(Document):
     _id = ObjectIdField(required=True, primary_key=True)
     client_id = ObjectIdField(required=True)
     loan_id = ObjectIdField(required=True)
-    request_time = DateField(default=datetime.utcnow())
+    request_time = DateTimeField(default=datetime.utcnow())
     status = StringField(choices=["processing", "approved", "rejected"], required=True)
