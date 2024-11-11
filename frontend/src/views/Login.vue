@@ -17,6 +17,7 @@
 <script>
 import Button from '../components/Button.vue';
 import axios from 'axios';
+import axios from 'axios';
 
 export default {
   components: {
