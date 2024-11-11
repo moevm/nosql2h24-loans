@@ -3,12 +3,12 @@
     <h1>Добро пожаловать, user!</h1>
     <h2>Оформление кредита</h2>
     <ul>
-      <li><router-link to="/client/loan-application">Оформить кредит 1</router-link></li>
-      <li><router-link to="/client/loan-application">Оформить кредит 2</router-link></li>
-      <li><router-link to="/client/loan-application">Оформить кредит 3</router-link></li>
-      <li><router-link to="/client/loan-application">Оформить кредит 4</router-link></li>
-      <li><router-link to="/client/loan-application">Оформить кредит 5</router-link></li>
-      <li><router-link to="/client/loan-application">Оформить кредит 6</router-link></li>
+      <li><router-link to="/client/loan-application?loanType=Молодежный кредит">Оформить Молодежный кредит</router-link></li>
+      <li><router-link to="/client/loan-application?loanType=Ипотека">Оформить Ипотека</router-link></li>
+      <li><router-link to="/client/loan-application?loanType=Кредит наличными">Оформить Кредит наличными</router-link></li>
+      <li><router-link to="/client/loan-application?loanType=Автокредит">Оформить Автокредит</router-link></li>
+      <li><router-link to="/client/loan-application?loanType=Рефинансирование">Оформить Рефинансирование</router-link></li>
+      <li><router-link to="/client/loan-application?loanType=Кредитная карта">Оформить Кредитная карта</router-link></li>
     </ul>
   </div>
 </template>
@@ -29,7 +29,7 @@ h2 {
 }
 
 ul {
-  list-style-type: none; 
+  list-style-type: none;
   padding: 0;
 }
 

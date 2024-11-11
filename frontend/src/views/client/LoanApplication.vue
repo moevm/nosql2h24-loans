@@ -3,49 +3,59 @@
     <h1>Оформление кредита</h1>
     <p>Заполните информацию в профиле или проверьте ее актуальность!</p>
 
-    <h2>Оформление кредита наличными: {{ loanType }}</h2>
+    <h2>Оформление кредита: {{ loanType }}</h2>
 
-    <label for="loanAmount">Желаемая сумма кредита:</label>
-    <input
-      type="number"
-      id="loanAmount"
-      v-model="loanAmount"
-      placeholder="Сумма кредита"
-    />
-    <div class="amount-range">
-      <span>Минимальная сумма: {{ minLoanAmount }}</span>
-      <span>Максимальная сумма: {{ maxLoanAmount }}</span>
-    </div>
+    <form @submit.prevent="submitApplication">
+      <div class="form-group">
+        <label for="loanAmount">Желаемая сумма кредита:</label>
+        <input
+          type="number"
+          id="loanAmount"
+          v-model="loanAmount"
+          placeholder="Сумма кредита"
+        />
+        <div class="amount-range">
+          <span>Минимальная сумма: {{ minLoanAmount }}</span>
+          <span>Максимальная сумма: {{ maxLoanAmount }}</span>
+        </div>
+      </div>
 
-    <label for="loanTerm">Срок:</label>
-    <select id="loanTerm" v-model="loanTerm">
-      <option v-for="term in loanTerms" :key="term" :value="term">{{ formatTerm(term) }}</option>
-    </select>
-    <div class="term-range">
-      <span>Минимальный срок: {{ minLoanTerm }} месяцев</span>
-      <span>Максимальный срок: {{ maxLoanTerm }} месяцев</span>
-    </div>
+      <div class="form-group">
+        <label for="expirationTime">Срок:</label>
+        <select id="expirationTime" v-model="expirationTime">
+          <option v-for="term in expirationTerms" :key="term" :value="term">{{ formatTerm(term) }}</option>
+        </select>
+        <div class="term-range">
+          <span>Минимальный срок: {{ minExpirationTime }} месяцев</span>
+          <span>Максимальный срок: {{ maxExpirationTime }} месяцев</span>
+        </div>
+      </div>
 
-    <label for="coBorrowers">Созаемщики:</label>
-    <input
-      type="text"
-      id="coBorrowers"
-      v-model="coBorrowers"
-      placeholder="Контактный телефон 1, контактный телефон 2, ..."
-    />
+      <div class="form-group">
+        <label for="coBorrowers">Созаемщики:</label>
+        <input
+          type="text"
+          id="coBorrowers"
+          v-model="coBorrowers"
+          placeholder="Контактный телефон 1, контактный телефон 2, ..."
+        />
+      </div>
 
-    <label for="collateral">Залог:</label>
-    <input
-      type="text"
-      id="collateral"
-      v-model="collateral"
-      placeholder="Сумма залога"
-    />
+      <div class="form-group">
+        <label for="deposit">Залог:</label>
+        <input
+          type="text"
+          id="deposit"
+          v-model="deposit"
+          placeholder="Сумма залога"
+        />
+      </div>
 
-    <div class="application-summary">
-      <h3>Заявка на потребительский кредит</h3>
-      <Button text="Оформить" @click="submitApplication" />
-    </div>
+      <div class="application-summary">
+        <h3>Заявка на потребительский кредит</h3>
+        <Button text="Оформить" type="submit" />
+      </div>
+    </form>
   </div>
 </template>
 
@@ -60,25 +70,30 @@ export default {
   },
   data() {
     return {
-      loanType: 'Кредит наличными',
       loanAmount: '',
       minLoanAmount: 10000,
       maxLoanAmount: 500000,
-      loanTerm: '',
-      minLoanTerm: 6,
-      maxLoanTerm: 36,
-      loanTerms: [],
+      expirationTime: '',
+      minExpirationTime: 6,
+      maxExpirationTime: 36,
+      expirationTerms: [],
       coBorrowers: '',
-      collateral: ''
+      deposit: '',
+      clientId: localStorage.getItem('userId') || null
     };
   },
+  computed: {
+    loanType() {
+      return this.$route.query.loanType || 'Кредит наличными';
+    }
+  },
   created() {
-    this.loanTerms = this.generateLoanTerms();
+    this.expirationTerms = this.generateExpirationTerms();
   },
   methods: {
-    generateLoanTerms() {
+    generateExpirationTerms() {
       const terms = [];
-      for (let i = this.minLoanTerm; i <= this.maxLoanTerm; i += 6) {
+      for (let i = this.minExpirationTime; i <= this.maxExpirationTime; i += 6) {
         terms.push(i);
       }
       return terms;
@@ -123,10 +138,10 @@ export default {
       const loanData = {
         loanType: this.loanType,
         loanAmount: this.loanAmount,
-        loanTerm: this.loanTerm,
+        expirationTime: this.expirationTime,
         coBorrowers: this.coBorrowers,
-        collateral: this.collateral,
-        clientId: localStorage.getItem('clientId') || null
+        deposit: this.deposit,
+        clientId: this.clientId
       };
 
       try {
@@ -149,28 +164,47 @@ export default {
   flex-direction: column;
   max-width: 600px;
   margin: auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+h1, h2, h3 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 20px;
 }
 
 label {
-  margin-top: 10px;
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
 }
 
 input[type='number'],
 input[type='text'],
 select {
-  margin-top: 5px;
+  width: 100%;
   padding: 10px;
   border-radius: 4px;
   border: 1px solid #ccc;
+  margin-bottom: 10px;
 }
 
 .amount-range,
 .term-range {
   display: flex;
   justify-content: space-between;
+  margin-bottom: 20px;
 }
 
 .application-summary {
+  text-align: center;
   margin-top: 20px;
 }
+
 </style>

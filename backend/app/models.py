@@ -33,7 +33,7 @@ class Client(Document):
 class InteractionHistory(EmbeddedDocument):
     _id = ObjectIdField(required=True)
     credit_request_id = ObjectIdField(required=True)
-    processing_date = DateField(default=datetime.utcnow)
+    processing_date = DateField(default=datetime.utcnow())
     decision = BooleanField()
 
 class Admin(Document):
@@ -51,7 +51,7 @@ class Admin(Document):
 class Credit(Document):
     _id = ObjectIdField(required=True, primary_key=True)
     loan_name = StringField(required=True)
-    opening_date = DateField(default=datetime.utcnow)
+    opening_date = DateField(default=datetime.utcnow())
     expiration_time = IntField()
     amount = FloatField()
     interest_rate = FloatField()
@@ -59,12 +59,12 @@ class Credit(Document):
     next_payment_date = DateField()
     debt = FloatField()
     payments_overdue = IntField()
-    co_borrowers = ListField(StringField(max_length=10))
+    co_borrowers = ListField(StringField(max_length=750))
     deposit = FloatField()
 
 class CreditRequest(Document):
     _id = ObjectIdField(required=True, primary_key=True)
     client_id = ObjectIdField(required=True)
     loan_id = ObjectIdField(required=True)
-    request_time = DateField(default=datetime.utcnow)
+    request_time = DateField(default=datetime.utcnow())
     status = StringField(choices=["processing", "approved", "rejected"], required=True)
