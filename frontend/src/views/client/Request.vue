@@ -1,20 +1,35 @@
 <template>
   <div class="client-request">
     <h1>Заявки</h1>
-    <p>Здесь можно посмотреть заявки.</p>
-
     <table class="extended-table">
       <thead>
         <tr>
           <th>
-            <label>Название кредита</label>
             <div class="filter-options">
-              <input type="checkbox" v-model="filters.loan_name.option1" /> Молодежный кредит
-              <input type="checkbox" v-model="filters.loan_name.option2" /> Ипотека
-              <input type="checkbox" v-model="filters.loan_name.option3" /> Кредит наличными
-              <input type="checkbox" v-model="filters.loan_name.option4" /> Автокредит
-              <input type="checkbox" v-model="filters.loan_name.option5" /> Рефинансирование
-              <input type="checkbox" v-model="filters.loan_name.option6" /> Кредитная карта
+              <div>
+                <input type="checkbox" v-model="filters.loan_name" value="Молодежный кредит" id="option1" />
+                <label for="option1">Молодежный кредит</label>
+              </div>
+              <div>
+                <input type="checkbox" v-model="filters.loan_name" value="Ипотека" id="option2" />
+                <label for="option2">Ипотека</label>
+              </div>
+              <div>
+                <input type="checkbox" v-model="filters.loan_name" value="Кредит наличными" id="option3" />
+                <label for="option3">Кредит наличными</label>
+              </div>
+              <div>
+                <input type="checkbox" v-model="filters.loan_name" value="Автокредит" id="option4" />
+                <label for="option4">Автокредит</label>
+              </div>
+              <div>
+                <input type="checkbox" v-model="filters.loan_name" value="Рефинансирование" id="option5" />
+                <label for="option5">Рефинансирование</label>
+              </div>
+              <div>
+                <input type="checkbox" v-model="filters.loan_name" value="Кредитная карта" id="option6" />
+                <label for="option6">Кредитная карта</label>
+              </div>
             </div>
           </th>
           <th>
@@ -26,35 +41,58 @@
             </div>
           </th>
           <th>
-            <label>Статус</label>
             <div class="filter-options">
-              <input type="checkbox" v-model="filters.status.status1" /> Статус 1
-              <input type="checkbox" v-model="filters.status.status2" /> Статус 2
-              <input type="checkbox" v-model="filters.status.status3" /> Статус 3
+              <div>
+                <input type="checkbox" v-model="filters.status" value="processing" id="status1" />
+                <label for="status1">processing</label>
+              </div>
+              <div>
+                <input type="checkbox" v-model="filters.status" value="approved" id="status2" />
+                <label for="status2">approved</label>
+              </div>
+              <div>
+                <input type="checkbox" v-model="filters.status" value="rejected" id="status3" />
+                <label for="status3">rejected</label>
+              </div>
             </div>
           </th>
           <th>
-            <label>Сумма</label>
             <div class="filter-options">
-              <input type="number" v-model="filters.amount_from" placeholder="от" />
+              <div class="filter-input-wrapper">
+                <input type="number" v-model="filters.amount_from" placeholder="от" class="filter-input" />
+                <span class="unit">руб.</span>
+              </div>
               <span>—</span>
-              <input type="number" v-model="filters.amount_to" placeholder="до" />
+              <div class="filter-input-wrapper">
+                <input type="number" v-model="filters.amount_to" placeholder="до" class="filter-input" />
+                <span class="unit">руб.</span>
+              </div>
             </div>
           </th>
           <th>
-            <label>Ставка</label>
             <div class="filter-options">
-              <input type="number" v-model="filters.rate_from" placeholder="от" />
+              <div class="filter-input-wrapper">
+                <input type="number" v-model="filters.rate_from" placeholder="от" class="filter-input" />
+                <span class="unit">%</span>
+              </div>
               <span>—</span>
-              <input type="number" v-model="filters.rate_to" placeholder="до" />
+              <div class="filter-input-wrapper">
+                <input type="number" v-model="filters.rate_to" placeholder="до" class="filter-input" />
+                <span class="unit">%</span>
+              </div>
             </div>
           </th>
           <th>
-            <label>Срок</label>
             <div class="filter-options">
-              <input type="number" v-model="filters.term_from" placeholder="от" />
+              <div class="filter-input-wrapper">
+                <input type="number" v-model="filters.term_from" placeholder="от" class="filter-input" />
+                <span class="unit">мес.</span>
+              </div>
               <span>—</span>
-              <input type="number" v-model="filters.term_to" placeholder="до" />
+              <div class="filter-input-wrapper">
+                <input type="number" v-model="filters.term_to" placeholder="до" class="filter-input" />
+                <span class="unit">мес.</span>
+              </div>
             </div>
           </th>
         </tr>
@@ -96,22 +134,48 @@
         </tr>
       </tbody>
     </table>
-    <button @click="applyFilters" class="filter-button">Применить фильтры</button>
+    <div class="button-container">
+      <Button text="Применить фильтры" @click="applyFilters" buttonType="button" />
+    </div>
+    <Notification 
+      :message="notificationMessage" 
+      :type="notificationType" 
+      :visible="isNotificationVisible" 
+      @close="closeNotification" />
   </div>
 </template>
 
 <script>
 import axios from 'axios';
+import Button from '../../components/Button.vue';
+import Notification from '../../components/Notification.vue';
 import SortArrow from '../../components/SortArrow.vue';
 
 export default {
   name: 'ClientRequest',
   components: {
-    SortArrow
+    Button,
+    SortArrow,
+    Notification
   },
   data() {
     return {
       requests: [],
+      filters: {
+        loan_name: [],
+        date_from: '',
+        date_to: '',
+        status: [],
+        amount_from: '',
+        amount_to: '',
+        rate_from: '',
+        rate_to: '',
+        term_from: '',
+        term_to: ''
+      },
+      notificationMessage: '',
+      notificationType: 'error',
+      isNotificationVisible: false,
       sortDirection: {
         loan_name: 0, 
         request_time: 0,
@@ -119,29 +183,6 @@ export default {
         amount: 0,
         interest_rate: 0,
         expiration_time: 0
-      },
-      filters: {
-        loan_name: {
-          option1: false,
-          option2: false,
-          option3: false,
-          option4: false,
-          option5: false,
-          option6: false,
-        },
-        date_from: '',
-        date_to: '',
-        status: {
-          status1: false,
-          status2: false,
-          status3: false,
-        },
-        amount_from: '',
-        amount_to: '',
-        rate_from: '',
-        rate_to: '',
-        term_from: '',
-        term_to: ''
       },
       sortField: 'loan_name'
     };
@@ -155,29 +196,79 @@ export default {
       try {
         const response = await axios.get('http://127.0.0.1:5000/credit_request', {
           params: {
-            client_id: userId,
-          }
-        });
-        this.requests = response.data; 
-      } catch (error) {
-        console.error('Ошибка при получении заявок:', error); 
-      }
-    },
-    async applyFilters() {
-      const userId = localStorage.getItem('userId');
-      const name = "Автокредит"
-      try {
-        const response = await axios.get('http://127.0.0.1:5000/filter_credit_request', {
-          params: {
-            client_id: userId,
-            loan_name: name
+            client_id: userId
           }
         });
         this.requests = response.data;
       } catch (error) {
-        console.error('Ошибка при применении фильтров:', error);
+        console.log('Ошибка при получении заявок:', error);
       }
     },
+
+    validateFilters() {
+      if (this.filters.amount_from && this.filters.amount_to && this.filters.amount_from > this.filters.amount_to) {
+        this.notificationMessage = 'Сумма "от" не может быть больше суммы "до"!';
+        this.notificationType = 'error';
+        this.isNotificationVisible = true;
+        return false;
+      }
+      if (this.filters.rate_from && this.filters.rate_to && this.filters.rate_from > this.filters.rate_to) {
+        this.notificationMessage = 'Ставка "от" не может быть больше ставки "до"!';
+        this.notificationType = 'error';
+        this.isNotificationVisible = true;
+        return false;
+      }
+      if (this.filters.rate_to > 100) {
+        this.notificationMessage = 'Ставка не может быть больше 100 %!';
+        this.notificationType = 'error';
+        this.isNotificationVisible = true;
+        return false;
+      }
+      if (this.filters.term_from && this.filters.term_to && this.filters.term_from > this.filters.term_to) {
+        this.notificationMessage = 'Срок "от" не может быть больше срока "до"!';
+        this.notificationType = 'error';
+        this.isNotificationVisible = true;
+        return false;
+      }
+      if (this.filters.date_from && this.filters.date_to && this.filters.date_from > this.filters.date_to) {
+        this.notificationMessage = 'Дата начала не может быть больше даты окончания!';
+        this.notificationType = 'error';
+        this.isNotificationVisible = true;
+        return false;
+      }
+      return true;
+    },
+
+    async applyFilters() {
+      console.log('Meow');
+      if (!this.validateFilters()) {
+        return;
+      }
+      const userId = localStorage.getItem('userId');
+      try {
+        const response = await axios.get('http://127.0.0.1:5000/filter_credit_request', {
+          params: {
+            client_id: userId,
+            ...this.filters
+          }
+        });
+        this.requests = response.data;
+        this.notificationMessage = 'Фильтры успешно применены!';
+        this.notificationType = 'success';
+        this.isNotificationVisible = true;
+      } 
+      catch (error) {
+        this.notificationMessage = 'Ошибка при применении фильтров!';
+        this.notificationType = 'error';
+        this.isNotificationVisible = true;
+        console.log('Ошибка при применении фильтров:', error);
+      }
+    },
+
+    closeNotification() {
+      this.isNotificationVisible = false;
+    },
+
     async fetchRequests() {
       const userId = localStorage.getItem('userId');
       const sortDirection = this.sortDirection;
@@ -192,9 +283,13 @@ export default {
         });
         this.requests = response.data;
       } catch (error) {
-        console.error('Ошибка при получении заявок:', error); 
+        this.notificationMessage = 'Ошибка при применении сортировки!';
+        this.notificationType = 'error';
+        this.isNotificationVisible = true;
+        console.log('Ошибка при применении сортировки:', error); 
       }
     },
+
     sortRequests(field) {
       const previousSortDirection = this.sortDirection[field];
       if (this.sortField === field) {
@@ -210,6 +305,7 @@ export default {
       });
       this.fetchRequests();
     },
+
     formatDate(date) {
       const options = {
         year: 'numeric',
@@ -227,11 +323,12 @@ export default {
 
 <style scoped>
 .client-request {
-  max-width: 1200px;
+  width: 80%;
+  max-width: 1400px;
   margin: auto;
   padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
   background-color: #f9f9f9;
 }
 
@@ -247,7 +344,7 @@ table.extended-table {
 }
 
 th, td {
-  border: 1px solid #ccc;
+  border: 1px solid #ddd;
   padding: 15px;
   text-align: left;
 }
@@ -268,26 +365,17 @@ th .filter-options {
   margin-top: 10px;
 }
 
+th .filter-options div {
+  display: flex;
+  align-items: center;
+}
+
 th .filter-options input {
-  margin-bottom: 5px;
+  margin-right: 8px;
 }
 
 th .filter-options span {
   margin: 0 5px;
-}
-
-.filter-button {
-  padding: 15px 25px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  margin-top: 20px;
-}
-
-.filter-button:hover {
-  background-color: #45a049;
 }
 
 tr:nth-child(even) {
@@ -295,10 +383,33 @@ tr:nth-child(even) {
 }
 
 tr:hover {
-  background-color: #e2e2e2;
+  background-color: #e0e0e0;
 }
 
-span {
-  padding: 0 5px;
+.button-container {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.filter-options {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.filter-input-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.filter-input {
+  margin-right: 5px;
+  width: 100px;
+}
+
+.unit {
+  margin-left: 5px;
+  font-size: 14px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 </style>

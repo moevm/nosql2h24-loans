@@ -1,18 +1,19 @@
 <template>
-  <button type="submit" @click="handleClick">{{ text }}</button>
+  <button :type="buttonType">{{ text }}</button>
 </template>
+
 
 <script>
 export default {
+  name: "Button",
   props: {
     text: {
       type: String,
       required: true
-    }
-  },
-  methods: {
-    handleClick() {
-      this.$emit('click');
+    },
+  buttonType: { 
+      type: String,
+      default: 'submit'
     }
   }
 };
@@ -22,6 +23,7 @@ export default {
 button {
   padding: 1.5% 3%; 
   font-size: 1.2em; 
+  font-family: 'Georgia';
   cursor: pointer;
   border: none;
   background-color: #9A1750; 
