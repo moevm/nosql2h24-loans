@@ -240,7 +240,6 @@ export default {
     },
 
     async applyFilters() {
-      console.log('Meow');
       if (!this.validateFilters()) {
         return;
       }
