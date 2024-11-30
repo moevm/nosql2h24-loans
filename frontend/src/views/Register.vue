@@ -6,6 +6,14 @@
     </div>
     <form @submit.prevent="submitForm">
       <div class="form-group">
+        <label for="name">Имя:</label>
+        <input type="text" v-model="name" required />
+      </div>
+      <div class="form-group">
+        <label for="surname">Фамилия:</label>
+        <input type="text" v-model="surname" required />
+      </div>
+      <div class="form-group">
         <label for="email">Email:</label>
         <input type="email" v-model="email" required />
       </div>
@@ -13,11 +21,15 @@
         <label for="password">Пароль:</label>
         <input type="password" v-model="password" required />
       </div>
-      <Button text="Войти" />
+      <div class="form-group">
+        <label for="confirmPassword">Подтвердите пароль:</label>
+        <input type="password" v-model="confirmPassword" required />
+      </div>
+      <Button text="Зарегистрироваться" />
     </form>
-    <div class="link-to-register">
-      Еще нет аккаунта? 
-      <router-link to="/register">Зарегистрируйтесь</router-link>
+    <div class="link-to-login">
+      Уже есть аккаунт? 
+      <router-link to="/login">Войдите</router-link>
     </div>
 
     <Notification
@@ -36,38 +48,44 @@ import axios from 'axios';
 import Notification from '../components/Notification.vue';
 
 export default {
-  name: 'Login',
+  name: 'Register',
   components: {
     Button,
-    Notification
+    Notification,
   },
   data() {
     return {
+      name: '',
+      surname: '',
       email: '',
       password: '',
+      confirmPassword: '',
       notificationMessage: '',
-      notificationType: 'info',
+      notificationType: 'info', 
       notificationVisible: false,
     };
   },
   methods: {
     async submitForm() {
+      if (this.password !== this.confirmPassword) {
+        this.showNotification('Пароли не совпадают', 'error');
+        return;
+      }
+
       try {
-        const response = await axios.post('http://127.0.0.1:5000/login', {
+        const response = await axios.post('http://127.0.0.1:5000/register', {
+          name: this.name,
+          surname: this.surname,
           email: this.email,
-          password: this.password
+          password: this.password,
         });
 
-        if (response.data.token) {
-          localStorage.setItem('authToken', response.data.token);
-          localStorage.setItem('userId', response.data.userId);
-          localStorage.setItem('userType', response.data.userType);
-
-          this.$router.push(`/${response.data.userType}/main`);
+        if (response.status === 200) {
+          this.showNotification('Регистрация успешна! Теперь вы можете войти.', 'success');
         }
       } catch (error) {
         if (error.response && error.response.status === 401) {
-          this.showNotification('Неверный email или пароль', 'error');
+          this.showNotification('Пользователь с таким email уже существует.', 'error');
         } else {
           this.showNotification('Произошла ошибка. Пожалуйста, попробуйте позже.', 'error');
           console.log(error);
@@ -83,8 +101,11 @@ export default {
 
     onNotificationClose() {
       this.notificationVisible = false;
+      if (this.notificationType === 'success') {
+        this.$router.push('/login'); 
+      }
     },
-  }
+  },
 };
 </script>
 
@@ -149,17 +170,17 @@ input {
   border-radius: 4px;
 }
 
-.link-to-register {
+.link-to-login {
   margin-top: 10px;
   text-align: center;
 }
 
-.link-to-register a {
+.link-to-login a {
   color: #9A1750;
   text-decoration: none;
 }
 
-.link-to-register a:hover {
+.link-to-login a:hover {
   text-decoration: underline;
 }
 </style>

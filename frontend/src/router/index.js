@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Login from '../views/Login.vue';
+import Register from '../views/Register.vue';
 import ClientMain from '../views/client/Main.vue';
 import AdminMain from '../views/admin/Main.vue';
 import ClientCredit from '../views/client/Credit.vue';
@@ -12,6 +13,7 @@ import ClientLoanApplication from '../views/client/LoanApplication.vue';
 const routes = [
   // { path: '/', redirect: '/login' },
   { path: '/login', component: Login, meta: { hideNavBar: true } },
+  { path: '/register', component: Register, meta: { hideNavBar: true } },
   { path: '/client/main', component: ClientMain },
   { path: '/admin/main', component: AdminMain },
   { path: '/client/credit', component: ClientCredit },
