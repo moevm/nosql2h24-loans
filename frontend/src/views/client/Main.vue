@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>Добро пожаловать, user!</h1>
+    <h1>Добро пожаловать, {{ userName }}!</h1>
     <h2>Оформление кредита</h2>
     <ul>
       <li><router-link to="/client/loan-application?loanType=Молодежный кредит">Оформить Молодежный кредит</router-link></li>
@@ -15,7 +15,13 @@
 
 <script>
 export default {
-  name: 'Main'
+  name: 'Main',
+  computed: {
+    userName() {
+      // Получаем имя пользователя из localStorage
+      return localStorage.getItem('userName') || 'Пользователь'; // Если имя не найдено, показываем 'Пользователь'
+    }
+  }
 };
 </script>
 

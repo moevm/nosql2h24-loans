@@ -62,6 +62,7 @@ export default {
           localStorage.setItem('authToken', response.data.token);
           localStorage.setItem('userId', response.data.userId);
           localStorage.setItem('userType', response.data.userType);
+          localStorage.setItem('userName', response.data.userName);
 
           this.$router.push(`/${response.data.userType}/main`);
         }

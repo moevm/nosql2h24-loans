@@ -32,7 +32,8 @@ def login():
         return jsonify({"message": "Client logged in successfully",
                         "userId": str(client.id),
                         "userType": "client",
-                        "token": token}), 200
+                        "token": token,
+                        "userName": client.name}), 200
         
     return jsonify({"error": "Invalid email or password"}), 401
 
@@ -49,7 +50,7 @@ def register():
         try:
             new_client = Client(
                 _id = ObjectId("".join(random.choices(string.hexdigits.lower(), k=24))),
-                name = surname + name,
+                name = surname + " " +name,
                 email = email,
                 workplace = "",
                 sex = "",

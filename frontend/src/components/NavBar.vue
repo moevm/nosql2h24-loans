@@ -4,12 +4,10 @@
       <li v-if="isClient"><router-link to="/client/main">SCAM-BANK</router-link></li>
       <li v-if="isAdmin"><router-link to="/admin/main">SCAM-BANK</router-link></li>
       <li v-if="isClient"><router-link to="/client/credit">Кредиты</router-link></li>
-      <!-- <li v-if="isAdmin"><router-link to="/admin/">Cтатистика</router-link></li> -->
       <li v-if="isClient"><router-link to="/client/request">Заявки</router-link></li>
       <li v-if="isAdmin"><router-link to="/admin/request">Заявки</router-link></li>
-      <!-- <li v-if="isAdmin"><router-link to="/admin/">История</router-link></li> -->
-      <li v-if="isClient"><router-link to="/client/profile">Профиль</router-link></li>
-      <li v-if="isAdmin"><router-link to="/admin/profile">Профиль</router-link></li>
+      <li v-if="isClient"><router-link to="/client/profile">{{ userName }}</router-link></li>
+      <li v-if="isAdmin"><router-link to="/admin/profile">{{ userName }}</router-link></li>
     </ul>
   </nav>
 </template>
@@ -24,6 +22,9 @@ export default {
     isAdmin() {
       return localStorage.getItem('userType') === 'admin';
     },
+    userName() {
+      return localStorage.getItem('userName') || 'Пользователь';
+    }
   },
 };
 </script>
@@ -50,6 +51,7 @@ a {
   color: #9A1750;
   text-decoration: none;
   font-weight: bold;
+  font-size: 25px;
 }
 
 a:hover {
