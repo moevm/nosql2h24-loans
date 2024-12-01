@@ -6,8 +6,10 @@
       <li v-if="isClient"><router-link to="/client/credit">Кредиты</router-link></li>
       <li v-if="isClient"><router-link to="/client/request">Заявки</router-link></li>
       <li v-if="isAdmin"><router-link to="/admin/request">Заявки</router-link></li>
-      <li v-if="isClient"><router-link to="/client/profile">{{ userName }}</router-link></li>
-      <li v-if="isAdmin"><router-link to="/admin/profile">{{ userName }}</router-link></li>
+      <li v-if="isClient && !isOnProfilePage"><router-link to="/client/profile">{{ userName }}</router-link></li>
+      <li v-if="isAdmin && !isOnProfilePage"><router-link to="/admin/profile">{{ userName }}</router-link></li>
+      <li v-if="isClient && isOnProfilePage"><a href="#" @click.prevent="logout">Выход</a></li>
+      <li v-if="isAdmin && isOnProfilePage"><a href="#" @click.prevent="logout">Выход</a></li>
     </ul>
   </nav>
 </template>
@@ -24,8 +26,17 @@ export default {
     },
     userName() {
       return localStorage.getItem('userName') || 'Пользователь';
+    },
+    isOnProfilePage() {
+      return this.$route.path === '/client/profile' || this.$route.path === '/admin/profile';
     }
   },
+  methods: {
+    logout() {
+      localStorage.clear();
+      this.$router.push('/login');
+    }
+  }
 };
 </script>
 
@@ -47,14 +58,21 @@ li {
   display: inline;
 }
 
-a {
+a, button {
   color: #9A1750;
   text-decoration: none;
   font-weight: bold;
   font-size: 25px;
 }
 
-a:hover {
+button {
+  background: none;
+  border: none;
+  cursor: pointer; /* Указывает, что элемент кликабельный */
+}
+
+a:hover,
+button:hover {
   text-decoration: underline;
 }
 </style>
