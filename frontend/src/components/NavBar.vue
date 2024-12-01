@@ -58,21 +58,14 @@ li {
   display: inline;
 }
 
-a, button {
+a {
   color: #9A1750;
   text-decoration: none;
   font-weight: bold;
   font-size: 25px;
 }
 
-button {
-  background: none;
-  border: none;
-  cursor: pointer; /* Указывает, что элемент кликабельный */
-}
-
-a:hover,
-button:hover {
+a:hover{
   text-decoration: underline;
 }
 </style>
