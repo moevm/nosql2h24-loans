@@ -1,35 +1,38 @@
 version: '3'
 
 services:
+  mongo:
+    image: mongodb/mongodb-community-server:7.0.0-ubi8
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - default
+      
   backend:
     container_name: backend
     build: ./backend
     ports:
-      - "127.0.0.1:5000:5000"
+      - "5000:5000" 
     environment:
       - MONGO_URI=mongodb://mongo:27017/credit_database
     depends_on:
       - mongo
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
+    networks:
+      - default
 
   frontend:
     container_name: frontend
     build: ./frontend
     ports:
-      - "127.0.0.1:8080:8080"
+      - "8080:8080"
+    networks:
+      - default
     depends_on:
       - backend
 
-  mongo:
-    image: mongodb/mongodb-community-server:7.0.0-ubi8
-    # ports:
-    #    - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
-
 volumes:
   mongo_data:
+
+networks:
+  default:
+    driver: bridge
