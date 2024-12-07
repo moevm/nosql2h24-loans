@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from models import CreditRequest, Credit, CreditHistory, Client
-
+from datetime import datetime
 bp = Blueprint('filter_routes', __name__)
 
 
@@ -31,7 +31,7 @@ def sort_credit_request():
             result.append({
                 "client_id": str(req.client_id),
                 "loan_name": credit.loan_name,
-                "request_time": req.request_time,
+                "request_time": req.request_time.isoformat(),
                 "status": req.status,
                 "amount": credit.amount,
                 "interest_rate": credit.interest_rate,
@@ -75,7 +75,7 @@ def sort_credit():
             result.append({
                 "client_id": str(req.client_id),
                 "loan_name": credit.loan_name,
-                'opening_date': credit.opening_date,
+                'opening_date': credit.opening_date.isoformat(),
                 'expiration_time': credit.expiration_time,
                 'amount': credit.amount,
                 'interest_rate': credit.interest_rate,
@@ -121,7 +121,7 @@ def sort_interaction_history():
             result.append({
                 "client_id": str(req.client_id),
                 "loan_name": credit.loan_name,
-                'opening_date': credit.opening_date,
+                'opening_date': credit.opening_date.isoformat(),
                 'expiration_time': credit.expiration_time,
                 'amount': credit.amount,
                 'interest_rate': credit.interest_rate,
@@ -139,39 +139,65 @@ def sort_interaction_history():
     return jsonify(result), 200
 
 
-@bp.route("/filter_credit_request", methods=['GET'])
-def filter_requests():
+@bp.route('/filter_credit_request', methods=['GET'])
+def filter_credit_request():
     print('Пришел запрос на фильтрацию с параметрами:', request.args)
-    filtered_data = request.args
-    request_filters = {}
-    credit_filters = {}
-    print(f"Что-то там: ", 'loan_name__icontains' in filtered_data)
+    data = request.args
+    client_id = data.get('client_id')
+
+    query_filter = {'client_id': client_id}
     
-    if 'status__icontains' in filtered_data:
-        request_filters['status'] = filtered_data['status']
-    if 'request_time__icontains' in filtered_data:
-        request_filters['request_data'] = filtered_data['request_time']
-    if 'loan_name' in filtered_data:
-        credit_filters['loan_name'] = filtered_data['loan_name']
-    if 'amount__icontains' in filtered_data:
-        credit_filters['amount'] = int(filtered_data['amount'])
-    if 'interest_rate__icontains' in filtered_data:
-        credit_filters['interest_rate'] = int(filtered_data['interest_rate'])
-    if 'expiration_time__icontains' in filtered_data:
-        credit_filters['expiration_time'] = int(filtered_data['expiration_time'])
+    credit_query_filter = {}
+    print(data.get('loan_name').split('@'))
+    if data.get('loan_name'):
+        credit_query_filter['loan_name__in'] = data['loan_name'].split('@')
+    if data.get('amount_from'):
+        credit_query_filter['amount__gte'] = float(data['amount_from'])
+    if data.get('amount_to'):
+        credit_query_filter['amount__lte'] = float(data['amount_to'])
+    if data.get('rate_from'):
+        credit_query_filter['interest_rate__gte'] = float(data['rate_from'])
+    if data.get('rate_to'):
+        credit_query_filter['interest_rate__lte'] = float(data['rate_to'])
+    if data.get('term_from'):
+        credit_query_filter['expiration_time__gte'] = int(data['term_from']) 
+    if data.get('term_to'):
+        credit_query_filter['expiration_time__lte'] = int(data['term_to'])
+
+    filtered_credits = Credit.objects(**credit_query_filter)
+
+    if not filtered_credits:
+        return jsonify({}), 200
+
+    loan_ids = [credit._id for credit in filtered_credits]
+
+    query_filter['loan_id__in'] = loan_ids
+    if data.get('status'):
+        query_filter['status__in'] = data['status'].split('@')
+    if data.get('date_from'):
+        query_filter['request_time__gte'] = datetime.fromisoformat(data['date_from'])
+    if data.get('date_to'):
+        query_filter['request_time__lte'] = datetime.fromisoformat(data['date_to'])
+        
+    filtered_requests_final = CreditRequest.objects(**query_filter)
+
+    response_data = []
     
-    print('Фильтры для кредитов:', credit_filters)
-    print('Фильтры для запросов:', request_filters)
-    if credit_filters:
-        print('here!!!!!!!!!!!')
-        loan_ids = Credit.objects(**credit_filters).only('_id').scalar('_id')
-        print('Теперь я здесь!!!!!!!!!')
-        request_filters['loan_id'] = loan_ids
-    print(request_filters)
-    filtered_requests = CreditRequest.objects(**request_filters)
-    result = [request.to_mongo().to_dict() for request in filtered_requests]
-    print('Результаты фильтрации:', result)
-    return jsonify(result), 200
+    for req in filtered_requests_final:
+        credit_info = Credit.objects.get(_id=req.loan_id)
+        response_data.append({
+            '_id': str(req._id),
+            'client_id': str(req.client_id),
+            'loan_id': str(req.loan_id),
+            'request_time': req.request_time.isoformat(),
+            'status': req.status,
+            'loan_name': credit_info.loan_name,
+            'amount': credit_info.amount,
+            'interest_rate': credit_info.interest_rate,
+            'expiration_time': credit_info.expiration_time,
+        })
+
+    return jsonify(response_data), 200
 
 
 @bp.route("/active_credits", methods=['POST'])

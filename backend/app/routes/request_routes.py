@@ -43,7 +43,7 @@ def get_all_credit_requests():
     credit_requests = CreditRequest.objects(client_id=client_id)
     result = [{"client_id": str(req.client_id), 
                "loan_name": Credit.objects(_id=req.loan_id).first().loan_name, 
-               "request_time": req.request_time, 
+               "request_time": req.request_time.isoformat(), 
                "status": req.status,
                "amount": Credit.objects(_id=req.loan_id).first().amount, 
                "interest_rate": Credit.objects(_id=req.loan_id).first().interest_rate,

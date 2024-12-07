@@ -9,7 +9,6 @@ import AdminRequest from '../views/admin/Request.vue';
 import ClientProfile from '../views/client/Profile.vue';
 import AdminProfile from '../views/admin/Profile.vue';
 import ClientLoanApplication from '../views/client/LoanApplication.vue';
-import Statistics from '../views/admin/Statistics.vue';
 
 const routes = [
   // { path: '/', redirect: '/login' },
@@ -22,7 +21,6 @@ const routes = [
   { path: '/admin/request', component: AdminRequest },
   { path: '/client/profile', component: ClientProfile },
   { path: '/admin/profile', component: AdminProfile },
-  { path: '/admin/statistics', component: Statistics },
   { path: '/client/loan-application', component: ClientLoanApplication },
 ];
 

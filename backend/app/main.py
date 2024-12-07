@@ -6,6 +6,7 @@ from mongoengine import connect
 from routes.auth_routes import bp as auth_routes_bp
 from routes.request_routes import bp as request_routes_bp
 from routes.filter import bp as filter_routes_bp
+from routes.profile import bp as profile_routes
 
 app = Flask(__name__)
 CORS(app)
@@ -16,6 +17,7 @@ connect('credit_database')
 app.register_blueprint(auth_routes_bp)
 app.register_blueprint(request_routes_bp)
 app.register_blueprint(filter_routes_bp)
+app.register_blueprint(profile_routes)
 
 if __name__ == '__main__':
     app.run(debug=True)

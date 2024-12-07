@@ -5,9 +5,7 @@
       <li v-if="isAdmin"><router-link to="/admin/main">SCAM-BANK</router-link></li>
       <li v-if="isClient"><router-link to="/client/credit">Кредиты</router-link></li>
       <li v-if="isClient"><router-link to="/client/request">Заявки</router-link></li>
-      <li v-if="isAdmin"><router-link to="/admin/statistics">Cтатистика</router-link></li>
       <li v-if="isAdmin"><router-link to="/admin/request">Заявки</router-link></li>
-      <li v-if="isAdmin"><router-link to="/admin/main">История</router-link></li>
       <li v-if="isClient && !isOnProfilePage"><router-link to="/client/profile">{{ userName }}</router-link></li>
       <li v-if="isAdmin && !isOnProfilePage"><router-link to="/admin/profile">{{ userName }}</router-link></li>
       <li v-if="isClient && isOnProfilePage"><a href="#" @click.prevent="logout">Выход</a></li>

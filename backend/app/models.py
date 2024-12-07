@@ -1,6 +1,7 @@
 from mongoengine import (
     Document, EmbeddedDocument, StringField, EmailField, DateField, DateTimeField,
-    FloatField, IntField, BooleanField, ListField, EmbeddedDocumentField, ObjectIdField
+    FloatField, IntField, BooleanField, ListField, EmbeddedDocumentField, ObjectIdField,
+    BinaryField
 )
 from datetime import datetime
 
@@ -17,7 +18,7 @@ class Client(Document):
     workplace = StringField()
     sex = StringField()
     password = StringField(required=True)
-    phone = StringField(max_length=10)
+    phone = StringField(max_length=11)
     age = IntField()
     birthdate = DateField()
     salary = FloatField()
@@ -29,6 +30,7 @@ class Client(Document):
     amount_of_children = IntField()
     rating = FloatField()
     credit_history = ListField(EmbeddedDocumentField(CreditHistory))
+    photo = BinaryField()
 
 class InteractionHistory(EmbeddedDocument):
     _id = ObjectIdField(required=True)
