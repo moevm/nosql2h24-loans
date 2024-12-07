@@ -7,7 +7,7 @@ services:
     ports:
       - "127.0.0.1:5000:5000"
     environment:
-      - MONGO_URI=mongodb://mongo:27017/mydatabase/credit_database
+      - MONGO_URI=mongodb://mongo:27017/credit_database
     depends_on:
       - mongo
     volumes:
