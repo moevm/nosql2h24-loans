@@ -1,34 +1,38 @@
 <template>
   <div class="client-request">
     <h1>Заявки</h1>
+    <div class="button-container">
+      <Button text="Отменить фильтрацию и сортировку" @click="resetFilters" buttonType="button" />
+      <Button text="Применить фильтры" @click="applyFilters" buttonType="button" />
+    </div>
     <table class="extended-table">
       <thead>
         <tr>
           <th>
             <div class="filter-options">
               <div>
-                <input type="checkbox" v-model="filters.loan_name" value="Молодежный кредит" id="option1" />
-                <label for="option1">Молодежный кредит</label>
+                <input type="checkbox" v-model="loan_name" value="Молодежный кредит" />
+                <label>Молодежный кредит</label>
               </div>
               <div>
-                <input type="checkbox" v-model="filters.loan_name" value="Ипотека" id="option2" />
-                <label for="option2">Ипотека</label>
+                <input type="checkbox" v-model="loan_name" value="Ипотека" />
+                <label>Ипотека</label>
               </div>
               <div>
-                <input type="checkbox" v-model="filters.loan_name" value="Кредит наличными" id="option3" />
-                <label for="option3">Кредит наличными</label>
+                <input type="checkbox" v-model="loan_name" value="Кредит наличными" />
+                <label>Кредит наличными</label>
               </div>
               <div>
-                <input type="checkbox" v-model="filters.loan_name" value="Автокредит" id="option4" />
-                <label for="option4">Автокредит</label>
+                <input type="checkbox" v-model="loan_name" value="Автокредит" />
+                <label>Автокредит</label>
               </div>
               <div>
-                <input type="checkbox" v-model="filters.loan_name" value="Рефинансирование" id="option5" />
-                <label for="option5">Рефинансирование</label>
+                <input type="checkbox" v-model="loan_name" value="Рефинансирование" />
+                <label>Рефинансирование</label>
               </div>
               <div>
-                <input type="checkbox" v-model="filters.loan_name" value="Кредитная карта" id="option6" />
-                <label for="option6">Кредитная карта</label>
+                <input type="checkbox" v-model="loan_name" value="Кредитная карта" />
+                <label>Кредитная карта</label>
               </div>
             </div>
           </th>
@@ -43,16 +47,16 @@
           <th>
             <div class="filter-options">
               <div>
-                <input type="checkbox" v-model="filters.status" value="processing" id="status1" />
-                <label for="status1">processing</label>
+                <input type="checkbox" v-model="status" value="processing" />
+                <label>processing</label>
               </div>
               <div>
-                <input type="checkbox" v-model="filters.status" value="approved" id="status2" />
-                <label for="status2">approved</label>
+                <input type="checkbox" v-model="status" value="approved" />
+                <label>approved</label>
               </div>
               <div>
-                <input type="checkbox" v-model="filters.status" value="rejected" id="status3" />
-                <label for="status3">rejected</label>
+                <input type="checkbox" v-model="status" value="rejected" />
+                <label>rejected</label>
               </div>
             </div>
           </th>
@@ -134,9 +138,6 @@
         </tr>
       </tbody>
     </table>
-    <div class="button-container">
-      <Button text="Применить фильтры" @click="applyFilters" buttonType="button" />
-    </div>
     <Notification 
       :message="notificationMessage" 
       :type="notificationType" 
@@ -161,11 +162,13 @@ export default {
   data() {
     return {
       requests: [],
+      loan_name: [],
+      status: [],
       filters: {
-        loan_name: [],
+        loan_name: '',
         date_from: '',
         date_to: '',
-        status: [],
+        status: '',
         amount_from: '',
         amount_to: '',
         rate_from: '',
@@ -203,6 +206,24 @@ export default {
       } catch (error) {
         console.log('Ошибка при получении заявок:', error);
       }
+    },
+
+    resetFilters() {
+      this.loan_name = [],
+      this.status = [],
+      this.filters = {
+        loan_name: '',
+        date_from: '',
+        date_to: '',
+        status: '',
+        amount_from: '',
+        amount_to: '',
+        rate_from: '',
+        rate_to: '',
+        term_from: '',
+        term_to: ''
+      };
+      this.getRequests();
     },
 
     validateFilters() {
@@ -243,12 +264,15 @@ export default {
       if (!this.validateFilters()) {
         return;
       }
+      this.filters.loan_name = this.loan_name.join('@');
+      this.filters.status = this.status.join('@');
+      const filter = this.filters;
       const userId = localStorage.getItem('userId');
       try {
         const response = await axios.get('http://127.0.0.1:5000/filter_credit_request', {
           params: {
             client_id: userId,
-            ...this.filters
+            ...filter
           }
         });
         this.requests = response.data;
@@ -386,8 +410,13 @@ tr:hover {
 }
 
 .button-container {
-  text-align: center;
-  margin-top: 20px;
+  display: flex;
+  justify-content: center; 
+  margin-top: 20px; 
+}
+
+.button-container Button {
+  margin: 0 20px;
 }
 
 .filter-options {

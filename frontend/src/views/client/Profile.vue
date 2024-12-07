@@ -141,15 +141,19 @@ export default {
     };
   },
   created() {
-    this.fetchProfile();
+    this.getProfile();
   },
   methods: {
-    async fetchProfile() {
+    async getProfile() {
       const userId = localStorage.getItem("userId");
+      const userType = localStorage.getItem("userType");
       try {
-        const response = await axios.get(
-          `http://127.0.0.1:5000/profile?client_id=${userId}`
-        );
+        const response = await axios.get('http://127.0.0.1:5000/get_profile', {
+          params: {
+            userId: userId,
+            userType: userType
+          }
+        });
         this.profile = response.data;
       } catch (error) {
         console.error("Ошибка при получении профиля:", error);
@@ -165,12 +169,13 @@ export default {
       }
       const userId = localStorage.getItem("userId");
       try {
-        await axios.post(`http://127.0.0.1:5000/profile`, {
+        await axios.post(`http://127.0.0.1:5000/client_profile_change`, {
           client_id: userId,
           ...this.profile,
         });
         this.isEditing = false;
         alert("Профиль успешно сохранен!");
+        this.getProfile()
       } catch (error) {
         console.error("Ошибка при сохранении профиля:", error);
         alert("Произошла ошибка при сохранении профиля.");
@@ -236,7 +241,7 @@ h1 {
 .profile-form {
   display: flex;
   justify-content: space-between;
-  gap: 50px; /* Увеличенное расстояние между столбцами */
+  gap: 50px; 
 }
 
 .profile-column {

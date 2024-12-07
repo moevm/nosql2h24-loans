@@ -24,7 +24,8 @@ def login():
         return jsonify({"message": "Admin logged in successfully",
                         "userId": str(admin.id),
                         "userType": "admin",
-                        "token": token}), 200
+                        "token": token,
+                        "userName": admin.name}), 200
     
     print(client.password, password)
     if client and client.password == password:
