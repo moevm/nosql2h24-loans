@@ -4,7 +4,7 @@
       <h1>Статистика</h1>
       <div class="filters-and-chart">
         <div class="filters">
-          <div class="filter">
+          <!-- <div class="filter">
             <label for="client">Сотрудник/клиент</label>
             <select id="client" v-model="selectedClientType">
               <option value="employee">Сотрудник</option>
@@ -32,11 +32,14 @@
               <option value="monthlyPayment">Ежемесячный платеж</option>
               <option value="creditStatus">Статус кредита</option>
             </select>
+          </div> -->
+          <div class="filter">
+            <input type="file" id="fileInput" @change="handleFileUpload" accept=".json" />
           </div>
           <div class="buttons">
             <Button text="Экспортировать" @click="exportData" />
             <Button text="Импортировать" @click="importData" />
-            <Button text="Построить" @click="buildChart" />
+            <!-- <Button text="Построить" @click="buildChart" /> -->
           </div>
         </div>
         <div class="chart-container">
@@ -78,18 +81,23 @@ export default {
       chartData: {
         labels: [],
         datasets: []
-      }
+      },
+      file: null
     };
   },
   methods: {
     async exportData() {
       try {
-        const response = await axios.post('http://127.0.0.1:5000/export', {
-          clientType: this.selectedClientType,
-          name: this.selectedName,
-          creditType: this.selectedCreditType,
-          filter: this.selectedFilter
+        const response = await axios.get('http://127.0.0.1:5000/database_export', {
+          responseType: 'blob'
         });
+
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'exported_data.json');
+        document.body.appendChild(link);
+        link.click();
 
         this.showNotification = true;
         this.notificationMessage = 'Данные успешно экспортированы';
@@ -101,18 +109,39 @@ export default {
         console.error('Ошибка при экспорте данных:', error);
       }
     },
+    handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (file && file.type === 'application/json') {
+        this.file = file;
+        this.showNotification = true;
+        this.notificationMessage = 'Файл успешно загружен';
+        this.notificationType = 'success';
+      } else {
+        this.showNotification = true;
+        this.notificationMessage = 'Пожалуйста, выберите файл формата JSON';
+        this.notificationType = 'error';
+      }
+    },
     async importData() {
+      // this.handleFileUpload()
+      if (!this.file) {
+        this.showNotification = true;
+        this.notificationMessage = 'Пожалуйста, выберите файл для импорта';
+        this.notificationType = 'error';
+        return;
+      }
+      const formData = new FormData();
+      formData.append('file', this.file);
       try {
-        const response = await axios.post('http://127.0.0.1:5000/import', {
-          clientType: this.selectedClientType,
-          name: this.selectedName,
-          creditType: this.selectedCreditType,
-          filter: this.selectedFilter
+        const response = await axios.post('http://127.0.0.1:5000/database_import', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
         });
-
         this.showNotification = true;
         this.notificationMessage = 'Данные успешно импортированы';
         this.notificationType = 'success';
+
       } catch (error) {
         this.showNotification = true;
         this.notificationMessage = 'Ошибка при импорте данных';
@@ -120,6 +149,7 @@ export default {
         console.error('Ошибка при импорте данных:', error);
       }
     },
+
     async buildChart() {
       try {
         const response = await axios.get('http://127.0.0.1:5000/statistics', {
@@ -152,6 +182,7 @@ export default {
         console.error('Ошибка при получении данных для построения графика:', error);
       }
     },
+
     renderChart() {
       const ctx = document.getElementById('creditChart').getContext('2d');
       new Chart(ctx, {
@@ -166,6 +197,7 @@ export default {
         }
       });
     },
+
     closeNotification() {
       this.showNotification = false;
     }
