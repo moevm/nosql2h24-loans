@@ -9,7 +9,9 @@ def create_sample_data():
     credits = [
         Credit(_id=ObjectId("64bfe2e30123456789abcdef"), loan_name="Молодежный кредит", amount=5000, interest_rate=5.5, monthly_payment=150, expiration_time = 6).save(),
         Credit(_id=ObjectId("64bfe2e40123456789abcdef"), loan_name="Автокредит", amount=15000, interest_rate=4.2, monthly_payment=300, expiration_time = 5).save(),
-        Credit(_id=ObjectId("64bfe2e50123456789abcdef"), loan_name="Ипотека", amount=200000, interest_rate=3.8, monthly_payment=1200, expiration_time = 4).save()
+        Credit(_id=ObjectId("64bfe2e50123456789abcdef"), loan_name="Ипотека", amount=200000, interest_rate=3.8, monthly_payment=1200, expiration_time = 4).save(),
+        Credit(_id=ObjectId("64bfe2e40123466789abcdef"), loan_name="Автокредит", amount=15000, interest_rate=4.2, monthly_payment=300, expiration_time = 5).save(),
+        Credit(_id=ObjectId("64bfe2e50123476789abcdef"), loan_name="Ипотека", amount=200000, interest_rate=3.8, monthly_payment=1200, expiration_time = 4).save()
     ]
 
     credit_history = [
@@ -27,7 +29,9 @@ def create_sample_data():
     credit_requests = [
         CreditRequest(_id=ObjectId("64bfe2e60123456789abcdef"), client_id=clients[0]._id, loan_id=credits[0]._id, status="processing").save(),
         CreditRequest(_id=ObjectId("64bfe2e70123456789abcdef"), client_id=clients[1]._id, loan_id=credits[1]._id, status="approved").save(),
-        CreditRequest(_id=ObjectId("64bfe2e80123456789abcdef"), client_id=clients[2]._id, loan_id=credits[2]._id, status="rejected").save()
+        CreditRequest(_id=ObjectId("64bfe2e60123956789abcdef"), client_id=clients[0]._id, loan_id=credits[2]._id, status="processing").save(),
+        CreditRequest(_id=ObjectId("64bfe2e90123456789abcdef"), client_id=clients[0]._id, loan_id=credits[3]._id, status="approved").save(),
+        CreditRequest(_id=ObjectId("64bfe2e11123456789abcdef"), client_id=clients[2]._id, loan_id=credits[4]._id, status="rejected").save()
     ]
     
     interaction_history = [
