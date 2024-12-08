@@ -79,4 +79,4 @@ def register():
             print(e)
             return jsonify({"message": "Ошибка со стороны сервера"}), 404
     else:
-        return jsonify({"message": "ОшибкаЭ пользователь с такой почтой существует"}), 401
+        return jsonify({"message": "Ошибка пользователь с такой почтой существует"}), 401

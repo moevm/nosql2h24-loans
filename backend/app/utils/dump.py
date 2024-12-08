@@ -4,8 +4,6 @@ from datetime import datetime
 from bson import ObjectId
 from models import Credit, CreditHistory, CreditRequest, Client, Admin, InteractionHistory
 
-connect(db="credit_database", host="localhost", port=27017)
-
 def create_sample_data():
 
     credits = [
@@ -75,5 +73,5 @@ def load_data_from_json(dump_file):
         CreditRequest(**credit_request_data).save()
     print("Данные успешно загружены из дампа.")
 
-create_sample_data()
-load_data_from_json(dump_data_to_json("mongo_dump.json"))
+# create_sample_data()
+# load_data_from_json(dump_data_to_json("mongo_dump.json"))
