@@ -13,7 +13,6 @@ def create_credit_request():
     print(f"Пришел запрос на кредит: ", data)
     
     client_id = data.get('clientId')
-    request_time = data.get('requestTime')
     loan_type = data.get('loanType')
     loan_amount = data.get('loanAmount')
     expiration_time = data.get('expirationTime')
@@ -29,7 +28,7 @@ def create_credit_request():
         _id=ObjectId("".join(random.choices(string.hexdigits.lower(), k=24))),
         client_id=client_id,
         loan_id=new_credit._id,
-        request_time=request_time,
+        request_time = datetime.utcnow(),
         status="processing"
     )
     credit_request.save()
