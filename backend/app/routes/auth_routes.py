@@ -4,7 +4,9 @@ from utils.auth import generate_token
 from datetime import date
 import random, string
 from bson import ObjectId
+import logging
 
+logging.basicConfig(level=logging.INFO)
 
 bp = Blueprint('auth_routes', __name__)
 
@@ -14,8 +16,8 @@ def login():
     email = data.get('email')
     password = data.get('password')
     
-    print("Попытка входа со следующими данными:", data)
-    
+    logging.info("Попытка входа со следующими данными: %s", data)
+    logging.info("Клиенты " + str(Client.objects))
     admin = Admin.objects(email=email).first()
     client = Client.objects(email=email).first()
     
@@ -27,7 +29,7 @@ def login():
                         "token": token,
                         "userName": admin.name}), 200
     
-    print(client.password, password)
+    #print(client.password, password)
     if client and client.password == password:
         token = generate_token(str(client.id))
         return jsonify({"message": "Client logged in successfully",
