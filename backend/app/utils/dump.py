@@ -2,16 +2,16 @@ import json
 from mongoengine import connect
 from datetime import datetime
 from bson import ObjectId
-from backend.app.models import Credit, CreditHistory, CreditRequest, Client, Admin, InteractionHistory
+from models import Credit, CreditHistory, CreditRequest, Client, Admin, InteractionHistory
 
 connect(db="credit_database", host="localhost", port=27017)
 
 def create_sample_data():
 
     credits = [
-        Credit(_id=ObjectId("64bfe2e30123456789abcdef"), loan_name="Молодежный", amount=5000, interest_rate=5.5, monthly_payment=150).save(),
-        Credit(_id=ObjectId("64bfe2e40123456789abcdef"), loan_name="Эконом", amount=15000, interest_rate=4.2, monthly_payment=300).save(),
-        Credit(_id=ObjectId("64bfe2e50123456789abcdef"), loan_name="Ипотека", amount=200000, interest_rate=3.8, monthly_payment=1200).save()
+        Credit(_id=ObjectId("64bfe2e30123456789abcdef"), loan_name="Молодежный кредит", amount=5000, interest_rate=5.5, monthly_payment=150, expiration_time = 6).save(),
+        Credit(_id=ObjectId("64bfe2e40123456789abcdef"), loan_name="Автокредит", amount=15000, interest_rate=4.2, monthly_payment=300, expiration_time = 5).save(),
+        Credit(_id=ObjectId("64bfe2e50123456789abcdef"), loan_name="Ипотека", amount=200000, interest_rate=3.8, monthly_payment=1200, expiration_time = 4).save()
     ]
 
     credit_history = [
@@ -43,7 +43,6 @@ def create_sample_data():
         Admin(_id=ObjectId("64bfe2e10123456789abcdef"), name="Admin2", email="admin2@example.com", password="adminpass", interaction_history=[interaction_history[1]]).save(),
         Admin(_id=ObjectId("64bfe2e20123456789abcdef"), name="Admin3", email="admin3@example.com", password="adminpass", interaction_history=[interaction_history[2]]).save()
     ]
-
     
 
 def dump_data_to_json(output_file):

@@ -8,16 +8,25 @@ from routes.request_routes import bp as request_routes_bp
 from routes.filter import bp as filter_routes_bp
 from routes.profile import bp as profile_routes
 from routes.statistic import bp as statistic_routes
+from models import Client
+from pymongo import MongoClient
+#from utils.dump import create_sample_data
 
 app = Flask(__name__)
-app.config.from_object(Config)  # Загружаем конфигурацию из класса Config
+app.config.from_object(Config)
 CORS(app)
 
-# Отключаем предыдущее соединение (если оно существует)
 disconnect()
-
-# Подключение к MongoDB с использованием MONGO_URI из конфигурации
 connect(host=app.config['MONGO_URI'])
+
+#@app.before_first_request
+#def check_collections():
+    #client = MongoClient(app.config['MONGO_URI'])
+    #db = client.get_default_database()
+    ##collections = db.list_collection_names()
+    #if not collections:
+#        pass
+        ##create_sample_data()
 
 app.register_blueprint(auth_routes_bp)
 app.register_blueprint(request_routes_bp)
@@ -27,7 +36,3 @@ app.register_blueprint(statistic_routes)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
-
-class Config:
-    SECRET_KEY = os.getenv("SECRET_KEY", "supersecret")
-    MONGO_URI = os.getenv("MONGO_URI", "mongodb://mongo:27017/credit_database")
