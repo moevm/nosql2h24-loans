@@ -10,11 +10,14 @@
             return localStorage.getItem('authToken');
         }
         function redirectToPage() {
+            const userType = localStorage.getItem('userType');
             const currentPath = window.location.pathname;
             if (currentPath === '/') { 
                 window.location.href = '/login'; 
-            } else if (isAuthenticated() && currentPath === '/login') {
+            } else if (isAuthenticated() && currentPath === '/login' && userType == 'client') {
                 window.location.href = '/client/main'; 
+            } else if (isAuthenticated() && currentPath === '/login' && userType == 'admin') {
+                window.location.href = '/admin/main'; 
             } else if (!isAuthenticated() && currentPath !== '/login') {
                 window.location.href = '/login';
             }
