@@ -1,6 +1,6 @@
 services:
-  mongo:
-    container_name: db
+  db:
+    container_name: mongo
     image: mongodb/mongodb-community-server:7.0.0-ubi8
     volumes:
       - mongo_data:/data/db
@@ -13,9 +13,9 @@ services:
     ports:
       - "127.0.0.1:5000:5000" 
     environment:
-      - MONGO_URI=mongodb://mongo:27017/credit_database
+      - MONGO_URI=mongodb://db:27017/credit_database
     depends_on:
-      - mongo
+      - db
     networks:
       - default
 
