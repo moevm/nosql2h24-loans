@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
 from models import CreditRequest, Credit, CreditHistory, Client
 from datetime import datetime
+
+
 bp = Blueprint('filter_routes', __name__)
 
 
@@ -12,14 +14,6 @@ def sort_credit_request():
     client_id = request.args.get('client_id')
     sort_field = request.args.get('sort_field')
     sort_direction = int(request.args.get('sort_direction', 0))
-    # sort_params = {
-    #     'request_time': int(request.args.get('request_time', 0)),
-    #     'status': int(request.args.get('status', 0)),
-    #     'loan_name': int(request.args.get('loan_name', 0)),
-    #     'amount': int(request.args.get('amount', 0)),
-    #     'interest_rate': int(request.args.get('interest_rate', 0)),
-    #     'expiration_time': int(request.args.get('expiration_time', 0))
-    # }
     
     credit_requests = CreditRequest.objects(client_id=client_id)
 
@@ -42,6 +36,40 @@ def sort_credit_request():
     # for param, order in sort_params.items():
     #     if order != 0:
     #         result = sorted(result, key=lambda x: x[param], reverse=(order == -1))
+    if sort_direction != 0:
+        result = sorted(result, key=lambda x: x[sort_field], reverse=(sort_direction == -1))
+    return jsonify(result), 200
+
+
+@bp.route('/sort_admins_request', methods=['GET'])
+def sort_credit_requests():
+    print('Пришел запрос на сортировку CreditRequest у администратора со следующими аргументами:', request.args)
+    
+    # получение параметров
+    sort_field = request.args.get('sort_field')
+    sort_direction = int(request.args.get('sort_direction', 0))
+    
+    credit_requests = CreditRequest.objects(status="processing")
+
+    # Получение информации о кредитах
+    result = []
+    for req in credit_requests:
+        credit = Credit.objects(_id=req.loan_id).first()
+        client = Client.objects(_id=req.client_id).first()
+        if credit:
+            result.append({
+                "client_id": str(req.client_id),
+                "request_id": str(req._id),
+                "fio": client.name,
+                "loan_name": credit.loan_name,
+                "request_time": req.request_time.isoformat(),
+                "status": req.status,
+                "amount": credit.amount,
+                "interest_rate": credit.interest_rate,
+                "rating": client.rating,
+                "expiration_time": credit.expiration_time
+            })
+    
     if sort_direction != 0:
         result = sorted(result, key=lambda x: x[sort_field], reverse=(sort_direction == -1))
     return jsonify(result), 200
@@ -199,12 +227,12 @@ def filter_credit_request():
 
     return jsonify(response_data), 200
 
-@bp.route("/filter_admins_request", methods=['POST'])
+@bp.route("/filter_admins_request", methods=['GET'])
 def filter_admins_request():
     print('Пришел запрос на фильтрацию с параметрами:', request.args)
     data = request.args
 
-    query_filter = {}
+    query_filter = {'status': 'processing'}
     client_filter = {}
     credit_query_filter = {}
     print(data.get('loan_name').split('@'))
@@ -226,14 +254,14 @@ def filter_admins_request():
 
     filtered_credits = Credit.objects(**credit_query_filter)
 
-    if data.get('client_name'):
-        client_filter['name__icontains'] = str(data['client_name'])
+    if data.get('fio'):
+        client_filter['name__icontains'] = str(data['fio'])
     if data.get('rating_from'):
         client_filter['rating__gte'] = float(data['rating_from'])
     if data.get('rating_to'):
         client_filter['rating_lte'] = float(data['rating_to'])
 
-    filtered_clients = Client._objects(**client_filter)
+    filtered_clients = Client.objects(**client_filter)
 
     if not filtered_credits:
         return jsonify({}), 200
@@ -258,9 +286,11 @@ def filter_admins_request():
         response_data.append({
             '_id': str(req._id),
             'client_id': str(req.client_id),
+            'fio': user_info.name,
             'loan_id': str(req.loan_id),
             'request_time': req.request_time.isoformat(),
-            'rating': str(user_info.rating),
+            'request_id': str(req._id),
+            'rating': user_info.rating,
             'client_id': str(user_info._id),
             'loan_name': credit_info.loan_name,
             'amount': credit_info.amount,
@@ -269,6 +299,7 @@ def filter_admins_request():
         })
 
     return jsonify(response_data), 200
+
 
 @bp.route("/active_credits", methods=['POST'])
 def filter_active_credits():
