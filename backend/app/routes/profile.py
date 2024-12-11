@@ -1,8 +1,9 @@
 from flask import Blueprint, request, jsonify
-from models import Client, Admin
+from models import Client, Admin, Property
 from mongoengine import ObjectIdField
 from datetime import datetime
 from bson import ObjectId
+from utils.validation import *
 import re
 
 bp = Blueprint('profile_routes', __name__)
@@ -21,11 +22,23 @@ def get_user_profile():
         birthdate = getattr(user, 'birthdate', '')
         if birthdate:
             birthdate = birthdate.isoformat()
+            
+        first_name, last_name, middle_name = user.name.split(' ')
+        birthdate = getattr(user, 'birthdate', '')
+        if birthdate:
+            birthdate = birthdate.strftime('%Y-%m-%d')
+        
+        properties = [prop.to_dict() for prop in getattr(user, 'owned_property', [])]
         
         profile_data = {
-            "fio": getattr(user, 'name', ''),
+            "firstName": first_name,
+            "lastName": last_name,
+            "middleName": middle_name,
             "email": getattr(user, 'email', ''),
+            "passportNumber": getattr(user, 'passport_number', ''),
+            'passportSeries': getattr(user, "passport_series", ''),
             "workplace": getattr(user, 'workplace', ''),
+            "post": getattr(user, 'post', ''),
             "gender": getattr(user, 'sex', ''),
             "birthdate": birthdate,
             "contactPhone": getattr(user, 'phone', ''),
@@ -34,7 +47,7 @@ def get_user_profile():
             "income": getattr(user, 'salary', ''),
             "incomeSpouse": getattr(user, 'spouse_salary', ''),
             "workplaceSpouse": getattr(user, 'spouse_workplace', ''),
-            "properties": getattr(user, 'owned_property', ''),
+            "properties": properties,
             "photo": getattr(user, 'photo', '')
         }
     elif user_type == 'admin':
@@ -47,13 +60,18 @@ def get_user_profile():
 @bp.route('/client_profile_change', methods=['POST'])
 def client_profile_change():
     data = request.get_json()
-    print("Пришел запрос на изменение данных для пользователя")
+    print("Пришел запрос на изменение данных для клиента:", data)
 
     # Парсинг переданных значений
     client_id = data.get("client_id")
-    fio = data.get("fio")
+    first_name = data.get("firstName") # имя
+    last_name = data.get("lastName") # фамилия
+    middle_name = data.get("middleName") # отчество
     email = data.get("email")
+    passport_series = data.get("passportSeries")
+    passport_number = data.get("passportNumber")
     workplace = data.get("workplace")
+    post = data.get("post")
     gender = data.get("gender")
     birthdate = data.get("birthdate")
     contactPhone = data.get("contactPhone")
@@ -68,44 +86,99 @@ def client_profile_change():
     errors = []
     
     if not client_id or not ObjectId.is_valid(client_id):
-        errors.append("Invalid client_id")
-    if fio and (not isinstance(fio, str) or len(fio.split()) != 3):
-        errors.append("Invalid fio")
+        errors.append("Неверный client_id.")
+    if re.search(r'\d', first_name):
+        errors.append("Имя не должно содержать числа.")
+    if re.search(r'\d', last_name):
+        errors.append("Фамилия не должна содержать числа.")
+    if re.search(r'\d', middle_name):
+        errors.append("Отчество не должно содержать числа.")
     if email and not re.match(r'[^@]+@[^@]+\.[^@]+', email):
-        errors.append("Invalid email")
+        errors.append("Некорректный вид email.")
+    if contactPhone and not validate_phone_number(contactPhone):
+        errors.append("Некорректный формат телефона.")
+    if properties:
+        for property in properties:
+            current_type = property.get('type')
+            current_value = property.get('value')
+            current_legal = property.get('legal')
+            if not(current_type and current_value and current_legal):
+                errors.append(f"Имущество со следующими значениями: {current_type}, {current_value}, {current_legal} некорректно.")
+    if childrenCount and childrenCount < 0:
+        errors.append("Количество детей не может быть отрицательным числом.")
+    if income and income < 0:
+        errors.append("Заработная плата не может быть отрицательным числом.")
+    if incomeSpouse and incomeSpouse < 0:
+        errors.append("Заработная плата супруга не может быть отрицательным числом.")
+    if passport_number and not validate_passport_number(passport_number):
+        errors.append("Номер паспорта должен иметь длину 6 и содержать исключительно числа.")
+    if passport_series and not validate_passport_series(passport_series):
+        errors.append("Серия паспорта должен иметь длину 4 и содержать исключительно числа.")
     
     if errors:
+        print(errors)
         return jsonify({"error": "Validation failed", "details": errors}), 400
     
     client = Client.objects(_id=ObjectId(client_id)).first()
     if not client:
         return jsonify({"error": "Client not found"}), 404
     
+    current_fio = client.name.split(' ')
     try:
-        if fio:
-            client.name = fio
+        if first_name:
+            current_fio[0] = first_name
+        if last_name:
+            current_fio[1] = last_name
+        if middle_name:
+            current_fio[2] = middle_name
+        
+        client.name = ' '.join(current_fio)
         if email:
             client.email = email
+        if passport_number:
+            client.passport_number = passport_number
+        if passport_series:
+            client.passport_series = passport_series
         if workplace:
             client.workplace = workplace
+        if post:
+            client.post = post
         if gender:
             client.sex = gender
         if birthdate:
             client.birthdate = datetime.strptime(birthdate, '%Y-%m-%d')
         if contactPhone:
-            client.phone = contactPhone
+            try:
+                client.phone = contactPhone
+            except Exception as e:
+                errors = ["Номер телефона имеет некорректную длину или формат."]
+                print(errors)
+                return jsonify({"error": "Validation failed", "details": errors}), 400
         if familyStatus:
             client.marital_status = familyStatus
-        if childrenCount:
+        if childrenCount is not None:
             client.amount_of_children = int(childrenCount)
-        if income:
-            client.salary = int(income)
-        if incomeSpouse:
-            client.spouse_salary = int(incomeSpouse)
+        if income is not None:
+            client.salary = float(income)
+        if incomeSpouse is not None:
+            client.spouse_salary = float(incomeSpouse)
         if workplaceSpouse:
             client.spouse_workplace = workplaceSpouse
         if properties:
-            client.owned_property = properties
+            client.owned_property = []
+            for property in properties:
+                current_type = property.get('type')
+                current_value = property.get('value')
+                current_legal = property.get('legal')
+                if current_type and current_value and current_legal:
+                    exists = any(
+                        p.type == current_type and p.value == current_value and p.legal == current_legal
+                        for p in client.owned_property
+                    )
+                    if not exists:
+                        client.owned_property.append(Property(type=current_type, value=current_value, legal=current_legal))
+        if not properties:
+            client.owned_property = []
         if photo:
             client.photo = photo
     except Exception as e:

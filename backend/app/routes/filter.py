@@ -199,74 +199,86 @@ def filter_credit_request():
 
     return jsonify(response_data), 200
 
+@bp.route("/filter_admins_request", methods=['POST'])
+def filter_admins_request():
+    print('Пришел запрос на фильтрацию с параметрами:', request.args)
+    data = request.args
+
+    query_filter = {}
+    client_filter = {}
+    credit_query_filter = {}
+    print(data.get('loan_name').split('@'))
+    
+    if data.get('loan_name'):
+        credit_query_filter['loan_name__in'] = data['loan_name'].split('@')
+    if data.get('amount_from'):
+        credit_query_filter['amount__gte'] = float(data['amount_from'])
+    if data.get('amount_to'):
+        credit_query_filter['amount__lte'] = float(data['amount_to'])
+    if data.get('rate_from'):
+        credit_query_filter['interest_rate__gte'] = float(data['rate_from'])
+    if data.get('rate_to'):
+        credit_query_filter['interest_rate__lte'] = float(data['rate_to'])
+    if data.get('term_from'):
+        credit_query_filter['expiration_time__gte'] = int(data['term_from']) 
+    if data.get('term_to'):
+        credit_query_filter['expiration_time__lte'] = int(data['term_to'])
+
+    filtered_credits = Credit.objects(**credit_query_filter)
+
+    if data.get('client_name'):
+        client_filter['name__icontains'] = str(data['client_name'])
+    if data.get('rating_from'):
+        client_filter['rating__gte'] = float(data['rating_from'])
+    if data.get('rating_to'):
+        client_filter['rating_lte'] = float(data['rating_to'])
+
+    filtered_clients = Client._objects(**client_filter)
+
+    if not filtered_credits:
+        return jsonify({}), 200
+
+    loan_ids = [credit._id for credit in filtered_credits]
+    client_ids = [client._id for client in filtered_clients]
+
+    query_filter['loan_id__in'] = loan_ids
+    query_filter['client_id__in'] = client_ids
+    if data.get('date_from'):
+        query_filter['request_time__gte'] = datetime.fromisoformat(data['date_from'])
+    if data.get('date_to'):
+        query_filter['request_time__lte'] = datetime.fromisoformat(data['date_to'])
+        
+    filtered_requests_final = CreditRequest.objects(**query_filter)
+
+    response_data = []
+    
+    for req in filtered_requests_final:
+        credit_info = Credit.objects.get(_id=req.loan_id)
+        user_info = Client.objects.get(_id=req.client_id)
+        response_data.append({
+            '_id': str(req._id),
+            'client_id': str(req.client_id),
+            'loan_id': str(req.loan_id),
+            'request_time': req.request_time.isoformat(),
+            'rating': str(user_info.rating),
+            'client_id': str(user_info._id),
+            'loan_name': credit_info.loan_name,
+            'amount': credit_info.amount,
+            'interest_rate': credit_info.interest_rate,
+            'expiration_time': credit_info.expiration_time,
+        })
+
+    return jsonify(response_data), 200
 
 @bp.route("/active_credits", methods=['POST'])
 def filter_active_credits():
-    filtered_data = request.get_json()
-    user_id = filtered_data['user_id']
-    user = Client._objects.find(_id=user_id)
-    credit_filters = {}
-    
-    if 'loan_name__icontains' in filtered_data:
-        credit_filters['loan_name__icontains'] = filtered_data['loan_name']
-    if 'amount__icontains' in filtered_data:
-        credit_filters['amount'] = int(filtered_data['amount'])
-    if 'interest_rate__icontains' in filtered_data:
-        credit_filters['interest_rate'] = int(filtered_data['interest_rate'])
-    if 'expiration_time__icontains' in filtered_data:
-        credit_filters['expiration_time'] = int(filtered_data['expiration_time'])
-    if 'monthly_payment__icontains' in filtered_data:
-        credit_filters['monthly_payment'] = int(filtered_data['monthly_payment'])
-    if 'debt' in filtered_data:
-        credit_filters['debt__icontains'] = int(filtered_data['debt'])
-    if 'payments_overdue__icontains' in filtered_data:
-        credit_filters['payments_overdue'] = int(filtered_data['payments_overdue'])
-    
-    approved_credit_ids = [
-        credit_history.loan_id for credit_history in user.credit_history
-        if credit_history.status == 'approved'
-    ]
-    credit_filters['_id__in'] = approved_credit_ids
-    filtered_credits = Credit.objects(**credit_filters)
-    result = [credit.to_mongo().to_dict() for credit in filtered_credits]
-
-    return jsonify(result), 200
+    pass
     
 
 @bp.route("/filter_credit_history", methods=['POST'])
 def filter_history():
-    filtered_data = request.get_json()
-    user_id = filtered_data['user_id']
-    user = Client._objects.find(_id=user_id)
-    credit_filters = {}
-    
-    if 'loan_name__icontains' in filtered_data:
-        credit_filters['loan_name__icontains'] = filtered_data['loan_name']
-    if 'amount__icontains' in filtered_data:
-        credit_filters['amount'] = int(filtered_data['amount'])
-    if 'interest_rate__icontains' in filtered_data:
-        credit_filters['interest_rate'] = int(filtered_data['interest_rate'])
-    if 'expiration_time__icontains' in filtered_data:
-        credit_filters['expiration_time'] = int(filtered_data['expiration_time'])
-    if 'monthly_payment__icontains' in filtered_data:
-        credit_filters['monthly_payment'] = int(filtered_data['monthly_payment'])
-    if 'debt' in filtered_data:
-        credit_filters['debt__icontains'] = int(filtered_data['debt'])
-    if 'payments_overdue__icontains' in filtered_data:
-        credit_filters['payments_overdue'] = int(filtered_data['payments_overdue'])
-    
-    users_credit_ids = [ credit_history.loan_id for credit_history in user.credit_history ]
-    credit_filters['_id__in'] = users_credit_ids
-    filtered_credits = Credit.objects(**credit_filters)
-    result = [credit.to_mongo().to_dict() for credit in filtered_credits]
-
-    return jsonify(result), 200
+    pass
 
 @bp.route("/interaction_history", methods=['POST'])
 def filter_interaction_history():
-    pass
-
-
-@bp.route("/filter_admins_request", methods=['POST'])
-def filter_admins_request():
     pass

@@ -1,8 +1,10 @@
+from weakref import ref
 from flask import Blueprint, request, jsonify, send_file
 from models import Client, Admin, Credit, CreditRequest
 from mongoengine import connect
 import json
 from io import BytesIO
+import logging
 
 bp = Blueprint('statistic_routes', __name__)
 connect(db="credit_database", host="localhost", port=27017)
@@ -51,4 +53,4 @@ def import_database():
     for credit_request_data in data.get("credit_requests", []):
         CreditRequest(**credit_request_data).save()
     print("Данные успешно загружены из дампа")
-    return jsonify({"message": "Данные успешно загружены из дампа"}), 200
+    return jsonify({"adminName": Admin.objects(_id=request.form.get('user_id')).first().name, "message": "Данные успешно загружены из дампа" }), 200
