@@ -1,5 +1,11 @@
 <template>
   <div class="loan-application">
+    <Notification
+      :message="notificationMessage"
+      :type="notificationType"
+      :visible="notificationVisible"
+      @close="closeNotification"
+    />
     <h1>Оформление кредита</h1>
     <p>Заполните информацию в профиле или проверьте ее актуальность!</p>
 
@@ -32,23 +38,28 @@
       </div>
 
       <div class="form-group">
-        <label for="coBorrowers">Созаемщики:</label>
-        <input
-          type="text"
-          id="coBorrowers"
-          v-model="coBorrowers"
-          placeholder="Контактный телефон 1, контактный телефон 2, ..."
-        />
+        <label for="deposit">Залог:</label>
+        <input type="text" id="deposit" v-model="deposit" placeholder="Сумма залога" />
       </div>
 
       <div class="form-group">
-        <label for="deposit">Залог:</label>
-        <input
-          type="text"
-          id="deposit"
-          v-model="deposit"
-          placeholder="Сумма залога"
-        />
+        <label>Созаемщики:</label>
+        <div v-for="(coBorrower, index) in coBorrowers" :key="index" class="co-borrower-item">
+          <label for="fio">ФИО:</label>
+          <input type="text" v-model="coBorrower.fio" id="fio" />
+          <label for="contactPhone">Контактный телефон:</label>
+          <input type="text" v-model="coBorrower.contactPhone" id="contactPhone" />
+          <label for="workplace">Место работы:</label>
+          <input type="text" v-model="coBorrower.workplace" id="workplace" />
+          <label for="post">Должность:</label>
+          <input type="text" v-model="coBorrower.post" id="post" />
+          <label for="passportSeries">Серия паспорта:</label>
+          <input type="text" v-model="coBorrower.passportSeries" id="passportSeries" maxlength="4" />
+          <label for="passportNumber">Номер паспорта:</label>
+          <input type="text" v-model="coBorrower.passportNumber" id="passportNumber" maxlength="6" />
+          <Button type="button" text="Удалить" @click="removeCoBorrower(index)" />
+        </div>
+        <Button type="button" text="Добавить созаемщика" @click="addCoBorrower" />
       </div>
 
       <div class="application-summary">
@@ -58,15 +69,16 @@
     </form>
   </div>
 </template>
-
 <script>
 import Button from '../../components/Button.vue';
+import Notification from '../../components/Notification.vue';
 import axios from 'axios';
 
 export default {
   name: 'ClientLoanApplication',
   components: {
-    Button
+    Button,
+    Notification
   },
   data() {
     return {
@@ -77,9 +89,12 @@ export default {
       minExpirationTime: 6,
       maxExpirationTime: 36,
       expirationTerms: [],
-      coBorrowers: '',
       deposit: '',
-      clientId: localStorage.getItem('userId') || null
+      clientId: localStorage.getItem('userId') || null,
+      coBorrowers: [{ fio: "", contactPhone: "", workplace: "", post: "", passportSeries: "", passportNumber: "" }],
+      notificationMessage: '',
+      notificationType: '',
+      notificationVisible: false
     };
   },
   computed: {
@@ -103,12 +118,12 @@ export default {
       const amount = parseFloat(this.loanAmount);
 
       if (isNaN(amount)) {
-        alert('Введите корректную сумму кредита.');
+        this.showNotification('Введите корректную сумму кредита.', 'error');
         return false;
       }
 
       if (amount < this.minLoanAmount || amount > this.maxLoanAmount) {
-        alert(`Сумма кредита должна быть от ${this.minLoanAmount} до ${this.maxLoanAmount}.`);
+        this.showNotification(`Сумма кредита должна быть от ${this.minLoanAmount} до ${this.maxLoanAmount}.`, 'error');
         return false;
       }
 
@@ -148,16 +163,33 @@ export default {
         const response = await axios.post('http://127.0.0.1:5000/credit_request', loanData);
         console.log('Заявка на кредит отправлена:', response.data);
         console.log(loanData);
-        alert('Заявка на кредит успешно отправлена!');
+        this.showNotification('Заявка на кредит успешно отправлена!', 'success');
       } catch (error) {
         console.error('Ошибка при отправке заявки на кредит:', error);
-        alert('Произошла ошибка при отправке заявки на кредит.');
+        this.showNotification('Произошла ошибка при отправке заявки на кредит.', 'error', error.response.data.details[0]);
       }
+    },
+
+    addCoBorrower() {
+      this.coBorrowers.push({ fio: "", contactPhone: "", workplace: "", post: "", passportSeries: "", passportNumber: "" });
+    },
+
+    removeCoBorrower(index) {
+      this.coBorrowers.splice(index, 1);
+    },
+
+    showNotification(message, type, error_message ='') {
+      this.notificationMessage = message + " " + error_message;
+      this.notificationType = type;
+      this.notificationVisible = true;
+    },
+
+    closeNotification() {
+      this.notificationVisible = false;
     }
   }
 };
 </script>
-
 <style scoped>
 .loan-application {
   display: flex;
@@ -188,7 +220,7 @@ label {
 input[type='number'],
 input[type='text'],
 select {
-  width: 100%;
+  width: calc(100% - 22px);
   padding: 10px;
   border-radius: 4px;
   border: 1px solid #ccc;
@@ -207,4 +239,7 @@ select {
   margin-top: 20px;
 }
 
+.co-borrower-item {
+  margin-bottom: 20px;
+}
 </style>

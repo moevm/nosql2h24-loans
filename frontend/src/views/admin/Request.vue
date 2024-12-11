@@ -1,5 +1,11 @@
 <template>
   <div class="admin-request">
+    <Notification
+      :message="notificationMessage"
+      :type="notificationType"
+      :visible="isNotificationVisible"
+      @close="closeNotification"
+    />
     <h1>Заявки</h1>
     <div class="button-container">
       <Button text="Отменить фильтрацию и сортировку" @click="resetFilters" buttonType="button" />
@@ -12,71 +18,55 @@
             <div class="filter-options">
               <div>
                 <label for="fio">ФИО:</label>
-                <input type="fio" v-model="fio" required />
+                <input type="text" v-model="filters.fio" id="fio" required />
               </div>
             </div>
           </th>
           <th>
             <div class="filter-options">
               <div>
-                <input type="checkbox" v-model="loan_name" value="Молодежный кредит" />
-                <label>Молодежный кредит</label>
+                <input type="checkbox" v-model="loan_name" value="Молодежный кредит" id="loan_name_youth" />
+                <label for="loan_name_youth">Молодежный кредит</label>
               </div>
               <div>
-                <input type="checkbox" v-model="loan_name" value="Ипотека" />
-                <label>Ипотека</label>
+                <input type="checkbox" v-model="loan_name" value="Ипотека" id="loan_name_mortgage" />
+                <label for="loan_name_mortgage">Ипотека</label>
               </div>
               <div>
-                <input type="checkbox" v-model="loan_name" value="Кредит наличными" />
-                <label>Кредит наличными</label>
+                <input type="checkbox" v-model="loan_name" value="Кредит наличными" id="loan_name_cash" />
+                <label for="loan_name_cash">Кредит наличными</label>
               </div>
               <div>
-                <input type="checkbox" v-model="loan_name" value="Автокредит" />
-                <label>Автокредит</label>
+                <input type="checkbox" v-model="loan_name" value="Автокредит" id="loan_name_auto" />
+                <label for="loan_name_auto">Автокредит</label>
               </div>
               <div>
-                <input type="checkbox" v-model="loan_name" value="Рефинансирование" />
-                <label>Рефинансирование</label>
+                <input type="checkbox" v-model="loan_name" value="Рефинансирование" id="loan_name_refinance" />
+                <label for="loan_name_refinance">Рефинансирование</label>
               </div>
               <div>
-                <input type="checkbox" v-model="loan_name" value="Кредитная карта" />
-                <label>Кредитная карта</label>
+                <input type="checkbox" v-model="loan_name" value="Кредитная карта" id="loan_name_card" />
+                <label for="loan_name_card">Кредитная карта</label>
               </div>
             </div>
           </th>
           <th>
-            <label>Дата заявки</label>
+            <label for="date_from">Дата заявки</label>
             <div class="filter-options">
-              <input type="date" v-model="filters.date_from" />
+              <input type="date" v-model="filters.date_from" id="date_from" />
               <span>—</span>
-              <input type="date" v-model="filters.date_to" />
-            </div>
-          </th>
-          <th>
-            <div class="filter-options">
-              <div>
-                <input type="checkbox" v-model="status" value="processing" />
-                <label>processing</label>
-              </div>
-              <div>
-                <input type="checkbox" v-model="status" value="approved" />
-                <label>approved</label>
-              </div>
-              <div>
-                <input type="checkbox" v-model="status" value="rejected" />
-                <label>rejected</label>
-              </div>
+              <input type="date" v-model="filters.date_to" id="date_to" />
             </div>
           </th>
           <th>
             <div class="filter-options">
               <div class="filter-input-wrapper">
-                <input type="number" v-model="filters.amount_from" placeholder="от" class="filter-input" />
+                <input type="number" v-model="filters.amount_from" placeholder="от" class="filter-input" id="amount_from" :min="0" />
                 <span class="unit">руб.</span>
               </div>
               <span>—</span>
               <div class="filter-input-wrapper">
-                <input type="number" v-model="filters.amount_to" placeholder="до" class="filter-input" />
+                <input type="number" v-model="filters.amount_to" placeholder="до" class="filter-input" id="amount_to" :min="0" />
                 <span class="unit">руб.</span>
               </div>
             </div>
@@ -84,12 +74,12 @@
           <th>
             <div class="filter-options">
               <div class="filter-input-wrapper">
-                <input type="number" v-model="filters.rate_from" placeholder="от" class="filter-input" />
+                <input type="number" v-model="filters.rate_from" placeholder="от" class="filter-input" id="rate_from" :min="0"/>
                 <span class="unit">%</span>
               </div>
               <span>—</span>
               <div class="filter-input-wrapper">
-                <input type="number" v-model="filters.rate_to" placeholder="до" class="filter-input" />
+                <input type="number" v-model="filters.rate_to" placeholder="до" class="filter-input" id="rate_to" :min="0"/>
                 <span class="unit">%</span>
               </div>
             </div>
@@ -97,21 +87,35 @@
           <th>
             <div class="filter-options">
               <div class="filter-input-wrapper">
-                <input type="number" v-model="filters.term_from" placeholder="от" class="filter-input" />
+                <input type="number" v-model="filters.term_from" placeholder="от" class="filter-input" id="term_from" :min="0" />
                 <span class="unit">мес.</span>
               </div>
               <span>—</span>
               <div class="filter-input-wrapper">
-                <input type="number" v-model="filters.term_to" placeholder="до" class="filter-input" />
+                <input type="number" v-model="filters.term_to" placeholder="до" class="filter-input" id="term_to" :min="0" />
                 <span class="unit">мес.</span>
               </div>
             </div>
           </th>
+          <th>
+            <div class="filter-options">
+              <div class="filter-input-wrapper">
+                <input type="number" v-model="filters.rating_from" placeholder="от" class="filter-input" id="rating_from" :min="0" />
+                <span class="unit"></span>
+              </div>
+              <span>—</span>
+              <div class="filter-input-wrapper">
+                <input type="number" v-model="filters.rating_to" placeholder="до" class="filter-input" id="rating_to" :min="0" />
+                <span class="unit"></span>
+              </div>
+            </div>
+          </th>
+          <th></th>
         </tr>
         <tr>
-          <th @click="sortRequests('loan_name')">
+          <th @click="sortRequests('fio')">
             ФИО
-            <SortArrow :sortDirection="sortDirection.loan_name" />
+            <SortArrow :sortDirection="sortDirection.fio" />
           </th>
           <th @click="sortRequests('loan_name')">
             Название кредита
@@ -133,29 +137,31 @@
             Срок
             <SortArrow :sortDirection="sortDirection.expiration_time" />
           </th>
-          <th @click="sortRequests('status')">
-            Статус
-            <SortArrow :sortDirection="sortDirection.status" />
+          <th @click="sortRequests('rating')">
+            Рейтинг
+            <SortArrow :sortDirection="sortDirection.rating" />
+          </th>
+          <th @click="sortRequests('decision')">
+            Решение
           </th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="request in requests" :key="request._id">
+        <tr v-for="request in requests" :key="request.request_id">
           <td>{{ request.fio }}</td>
           <td>{{ request.loan_name }}</td>
           <td>{{ formatDate(request.request_time) }}</td>
-          <td>{{ request.status }}</td>
           <td>{{ request.amount }}</td>
           <td>{{ request.interest_rate }}</td>
           <td>{{ request.expiration_time }}</td>
+          <td>{{ request.rating }}</td>
+          <td class="decision-button-container"> 
+            <Button text="✓" @click="requestDecision(request.request_id, true)" buttonType="button" class="decision-button" />
+            <Button text="✗" @click="requestDecision(request.request_id, false)" buttonType="button" class="decision-button" />
+          </td>
         </tr>
       </tbody>
     </table>
-    <Notification 
-      :message="notificationMessage" 
-      :type="notificationType" 
-      :visible="isNotificationVisible" 
-      @close="closeNotification" />
   </div>
 </template>
 
@@ -174,33 +180,36 @@ export default {
   },
   data() {
     return {
-      requests: [],
       loan_name: [],
-      status: [],
+      requests: [],
       filters: {
-        loan_name: '',
+        fio: '',
+        loan_name:'',
         date_from: '',
         date_to: '',
-        status: '',
         amount_from: '',
         amount_to: '',
         rate_from: '',
         rate_to: '',
         term_from: '',
-        term_to: ''
+        term_to: '',
+        rating_from: '',
+        rating_to: ''
       },
       notificationMessage: '',
       notificationType: 'error',
       isNotificationVisible: false,
       sortDirection: {
-        loan_name: 0, 
+        fio: 0,
+        loan_name: 0,
         request_time: 0,
-        status: 0,
         amount: 0,
         interest_rate: 0,
-        expiration_time: 0
+        expiration_time: 0,
+        rating: 0,
+        decision: 0
       },
-      sortField: 'loan_name'
+      sortField: 'fio'
     };
   },
   created() {
@@ -210,64 +219,72 @@ export default {
     async getRequests() {
       const userId = localStorage.getItem('userId');
       try {
-        const response = await axios.get('http://127.0.0.1:5000/credit_request', {
+        const response = await axios.get('http://127.0.0.1:5000/admins_request');
+        this.requests = response.data;
+        console.log(this.requests);
+      } catch (error) {
+        this.showNotification('Ошибка при получении заявок!', 'error');
+        console.error('Ошибка при получении заявок:', error);
+      }
+    },
+    async requestDecision(requestId, decision) {
+      const userId = localStorage.getItem('userId');
+      try {
+        console.log(requestId, decision);
+        const response = await axios.get('http://127.0.0.1:5000/credit_request_decision', {
           params: {
-            client_id: userId
+            admin_id: userId,
+            request_id: requestId,
+            decision: decision
           }
         });
-        this.requests = response.data;
+        console.log("Данные ответа", response.data);
+        this.showNotification('Заявка успешно обработана!', 'success');
+        this.applyFilters();
       } catch (error) {
-        console.log('Ошибка при получении заявок:', error);
+        this.showNotification('Ошибка при обработке заявки!', 'error');
+        console.error('Ошибка при получении заявок:', error);
       }
     },
 
     resetFilters() {
-      this.loan_name = [],
-      this.status = [],
+      this.loan_name = [];
       this.filters = {
-        loan_name: '',
+        fio: '',
+        loan_name: [],
         date_from: '',
         date_to: '',
-        status: '',
         amount_from: '',
         amount_to: '',
         rate_from: '',
         rate_to: '',
         term_from: '',
-        term_to: ''
+        term_to: '',
+        rating_from: '',
+        rating_to: ''
       };
       this.getRequests();
     },
 
     validateFilters() {
       if (this.filters.amount_from && this.filters.amount_to && this.filters.amount_from > this.filters.amount_to) {
-        this.notificationMessage = 'Сумма "от" не может быть больше суммы "до"!';
-        this.notificationType = 'error';
-        this.isNotificationVisible = true;
+        this.showNotification('Сумма "от" не может быть больше суммы "до"!', 'error');
         return false;
       }
       if (this.filters.rate_from && this.filters.rate_to && this.filters.rate_from > this.filters.rate_to) {
-        this.notificationMessage = 'Ставка "от" не может быть больше ставки "до"!';
-        this.notificationType = 'error';
-        this.isNotificationVisible = true;
+        this.showNotification('Ставка "от" не может быть больше ставки "до"!', 'error');
         return false;
       }
       if (this.filters.rate_to > 100) {
-        this.notificationMessage = 'Ставка не может быть больше 100 %!';
-        this.notificationType = 'error';
-        this.isNotificationVisible = true;
+        this.showNotification('Ставка не может быть больше 100 %!', 'error');
         return false;
       }
       if (this.filters.term_from && this.filters.term_to && this.filters.term_from > this.filters.term_to) {
-        this.notificationMessage = 'Срок "от" не может быть больше срока "до"!';
-        this.notificationType = 'error';
-        this.isNotificationVisible = true;
+        this.showNotification('Срок "от" не может быть больше срока "до"!', 'error');
         return false;
       }
       if (this.filters.date_from && this.filters.date_to && this.filters.date_from > this.filters.date_to) {
-        this.notificationMessage = 'Дата начала не может быть больше даты окончания!';
-        this.notificationType = 'error';
-        this.isNotificationVisible = true;
+        this.showNotification('Дата начала не может быть больше даты окончания!', 'error');
         return false;
       }
       return true;
@@ -278,27 +295,31 @@ export default {
         return;
       }
       this.filters.loan_name = this.loan_name.join('@');
-      this.filters.status = this.status.join('@');
       const filter = this.filters;
       const userId = localStorage.getItem('userId');
       try {
-        const response = await axios.get('http://127.0.0.1:5000/filter_credit_request', {
+        const response = await axios.get('http://127.0.0.1:5000/filter_admins_request', {
           params: {
             client_id: userId,
             ...filter
           }
         });
         this.requests = response.data;
-        this.notificationMessage = 'Фильтры успешно применены!';
-        this.notificationType = 'success';
-        this.isNotificationVisible = true;
-      } 
-      catch (error) {
-        this.notificationMessage = 'Ошибка при применении фильтров!';
-        this.notificationType = 'error';
-        this.isNotificationVisible = true;
-        console.log('Ошибка при применении фильтров:', error);
+        if (!this.isNotificationVisible){
+          this.showNotification('Фильтры успешно применены!', 'success');
+        }
+      } catch (error) {
+        if (!this.isNotificationVisible){
+          this.showNotification('Ошибка при применении фильтров!', 'error');
+        }
+        console.error('Ошибка при применении фильтров:', error);
       }
+    },
+
+    showNotification(message, type, error_message ='') {
+      this.notificationMessage = message + " " + error_message;
+      this.notificationType = type;
+      this.isNotificationVisible = true;
     },
 
     closeNotification() {
@@ -310,19 +331,17 @@ export default {
       const sortDirection = this.sortDirection;
       const sortField = this.sortField;
       try {
-        const response = await axios.get('http://127.0.0.1:5000/sort_credit_request', {
+        const response = await axios.get('http://127.0.0.1:5000/sort_admins_request', {
           params: {
-            client_id: userId, 
-            sort_field: sortField, 
+            client_id: userId,
+            sort_field: sortField,
             sort_direction: sortDirection[sortField]
           }
         });
         this.requests = response.data;
       } catch (error) {
-        this.notificationMessage = 'Ошибка при применении сортировки!';
-        this.notificationType = 'error';
-        this.isNotificationVisible = true;
-        console.log('Ошибка при применении сортировки:', error); 
+        this.showNotification('Ошибка при применении сортировки!', 'error');
+        console.error('Ошибка при применении сортировки:', error);
       }
     },
 
@@ -356,11 +375,10 @@ export default {
   }
 };
 </script>
-
 <style scoped>
-.client-request {
+.admin-request {
   width: 80%;
-  max-width: 1400px;
+  max-width: 1600px;
   margin: auto;
   padding: 20px;
   border: 1px solid #ddd;
@@ -424,8 +442,8 @@ tr:hover {
 
 .button-container {
   display: flex;
-  justify-content: center; 
-  margin-top: 20px; 
+  justify-content: center;
+  margin-top: 20px;
 }
 
 .button-container Button {
@@ -453,4 +471,19 @@ tr:hover {
   white-space: nowrap;
   flex-shrink: 0;
 }
+.decision-button-container {
+  display: flex;
+  align-items: center;
+}
+
+.decision-button {
+  width: 30px; 
+  height: 30px;
+  margin-right: 10px;
+}
+
+.decision-button:last-child {
+  margin-right: 0;
+}
+
 </style>

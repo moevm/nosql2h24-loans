@@ -77,6 +77,7 @@ export default {
       notificationMessage: '',
       notificationType: 'info',
       showNotification: false,
+      reloadFlag: false,
       userName: localStorage.getItem('userName') || 'Пользователь',
       chartData: {
         labels: [],
@@ -91,14 +92,12 @@ export default {
         const response = await axios.get('http://127.0.0.1:5000/database_export', {
           responseType: 'blob'
         });
-
         const url = window.URL.createObjectURL(new Blob([response.data]));
         const link = document.createElement('a');
         link.href = url;
         link.setAttribute('download', 'exported_data.json');
         document.body.appendChild(link);
         link.click();
-
         this.showNotification = true;
         this.notificationMessage = 'Данные успешно экспортированы';
         this.notificationType = 'success';
@@ -132,19 +131,18 @@ export default {
       const formData = new FormData();
       const userId = localStorage.getItem("userId");
       formData.append('file', this.file);
-      // formData.append('user_id', userId);
+      formData.append('user_id', userId);
       try {
         const response = await axios.post('http://127.0.0.1:5000/database_import', formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
         });
-        // localStorage.setItem('userType', response.data.userType);
-        // localStorage.setItem('userName', response.data.userName);
+        localStorage.setItem('userName', response.data.adminName);
+        this.reloadFlag = true;
         this.showNotification = true;
-        this.notificationMessage = 'Данные успешно импортированы';
+        this.notificationMessage = 'Данные успешно импортированы.';
         this.notificationType = 'success';
-
       } catch (error) {
         this.showNotification = true;
         this.notificationMessage = 'Ошибка при импорте данных';
@@ -203,6 +201,10 @@ export default {
 
     closeNotification() {
       this.showNotification = false;
+      if (this.reloadFlag == true) {
+        window.location.reload();
+        this.reloadFlag = false;
+      }
     }
   }
 };
@@ -264,7 +266,6 @@ h1 {
 .chart-container {
   width: 70%;
 }
-
 .chart {
   width: 100%;
   max-width: 800px;

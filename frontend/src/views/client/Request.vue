@@ -63,12 +63,12 @@
           <th>
             <div class="filter-options">
               <div class="filter-input-wrapper">
-                <input type="number" v-model="filters.amount_from" placeholder="от" class="filter-input" />
+                <input type="number" v-model="filters.amount_from" placeholder="от" class="filter-input" :min="0"/>
                 <span class="unit">руб.</span>
               </div>
               <span>—</span>
               <div class="filter-input-wrapper">
-                <input type="number" v-model="filters.amount_to" placeholder="до" class="filter-input" />
+                <input type="number" v-model="filters.amount_to" placeholder="до" class="filter-input" :min="0"/>
                 <span class="unit">руб.</span>
               </div>
             </div>
@@ -76,12 +76,12 @@
           <th>
             <div class="filter-options">
               <div class="filter-input-wrapper">
-                <input type="number" v-model="filters.rate_from" placeholder="от" class="filter-input" />
+                <input type="number" v-model="filters.rate_from" placeholder="от" class="filter-input" :min="0"/>
                 <span class="unit">%</span>
               </div>
               <span>—</span>
               <div class="filter-input-wrapper">
-                <input type="number" v-model="filters.rate_to" placeholder="до" class="filter-input" />
+                <input type="number" v-model="filters.rate_to" placeholder="до" class="filter-input" :min="0"/>
                 <span class="unit">%</span>
               </div>
             </div>
@@ -89,12 +89,12 @@
           <th>
             <div class="filter-options">
               <div class="filter-input-wrapper">
-                <input type="number" v-model="filters.term_from" placeholder="от" class="filter-input" />
+                <input type="number" v-model="filters.term_from" placeholder="от" class="filter-input" :min="0"/>
                 <span class="unit">мес.</span>
               </div>
               <span>—</span>
               <div class="filter-input-wrapper">
-                <input type="number" v-model="filters.term_to" placeholder="до" class="filter-input" />
+                <input type="number" v-model="filters.term_to" placeholder="до" class="filter-input" :min="0"/>
                 <span class="unit">мес.</span>
               </div>
             </div>
