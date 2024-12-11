@@ -1,14 +1,19 @@
 <template>
   <div class="main-container">
-    <h1>Добро пожаловать, admin!</h1>
+    <h1>Добро пожаловать, {{ userName }}!</h1>
     <h2>У вас есть непросмотренные заявки!</h2>
-    <h2>Вы можете посмотреть их здесь.</h2>
+    <h2>Вы можете посмотреть их <a href="/admin/request">здесь</a>.</h2>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'AdminMain'
+  name: 'AdminMain',
+  computed: {
+    userName() {
+      return localStorage.getItem('userName') || 'Админ'; 
+    }
+  }
 };
 </script>
 

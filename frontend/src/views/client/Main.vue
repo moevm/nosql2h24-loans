@@ -15,11 +15,10 @@
 
 <script>
 export default {
-  name: 'Main',
+  name: 'ClientMain',
   computed: {
     userName() {
-      // Получаем имя пользователя из localStorage
-      return localStorage.getItem('userName') || 'Пользователь'; // Если имя не найдено, показываем 'Пользователь'
+      return localStorage.getItem('userName') || 'Пользователь'; 
     }
   }
 };
