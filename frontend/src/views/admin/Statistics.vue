@@ -77,7 +77,6 @@ export default {
       notificationMessage: '',
       notificationType: 'info',
       showNotification: false,
-      reloadFlag: false,
       userName: localStorage.getItem('userName') || 'Пользователь',
       chartData: {
         labels: [],
@@ -92,12 +91,14 @@ export default {
         const response = await axios.get('http://127.0.0.1:5000/database_export', {
           responseType: 'blob'
         });
+
         const url = window.URL.createObjectURL(new Blob([response.data]));
         const link = document.createElement('a');
         link.href = url;
         link.setAttribute('download', 'exported_data.json');
         document.body.appendChild(link);
         link.click();
+
         this.showNotification = true;
         this.notificationMessage = 'Данные успешно экспортированы';
         this.notificationType = 'success';
@@ -138,11 +139,12 @@ export default {
             'Content-Type': 'multipart/form-data'
           }
         });
-        localStorage.setItem('userName', response.data.adminName);
-        this.reloadFlag = true;
+        localStorage.setItem('userType', response.data.userType);
+        localStorage.setItem('userName', response.data.userName);
         this.showNotification = true;
-        this.notificationMessage = 'Данные успешно импортированы.';
+        this.notificationMessage = 'Данные успешно импортированы';
         this.notificationType = 'success';
+
       } catch (error) {
         this.showNotification = true;
         this.notificationMessage = 'Ошибка при импорте данных';
@@ -201,10 +203,6 @@ export default {
 
     closeNotification() {
       this.showNotification = false;
-      if (this.reloadFlag == true) {
-        window.location.reload();
-        this.reloadFlag = false;
-      }
     }
   }
 };
@@ -266,6 +264,7 @@ h1 {
 .chart-container {
   width: 70%;
 }
+
 .chart {
   width: 100%;
   max-width: 800px;
