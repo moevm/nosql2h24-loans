@@ -132,15 +132,15 @@ export default {
       const formData = new FormData();
       const userId = localStorage.getItem("userId");
       formData.append('file', this.file);
-      // formData.append('user_id', userId);
+      formData.append('user_id', userId);
       try {
         const response = await axios.post('http://127.0.0.1:5000/database_import', formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
         });
-        // localStorage.setItem('userType', response.data.userType);
-        // localStorage.setItem('userName', response.data.userName);
+        localStorage.setItem('userType', response.data.userType);
+        localStorage.setItem('userName', response.data.userName);
         this.showNotification = true;
         this.notificationMessage = 'Данные успешно импортированы';
         this.notificationType = 'success';
