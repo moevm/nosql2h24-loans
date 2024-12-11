@@ -2,7 +2,7 @@ import json
 from mongoengine import connect
 from datetime import datetime
 from bson import ObjectId
-from models import Credit, CreditHistory, CreditRequest, Client, Admin, InteractionHistory
+from models import Credit, CreditHistory, CreditRequest, Client, Admin, InteractionHistory, Property
 
 def create_sample_data():
 
@@ -21,9 +21,32 @@ def create_sample_data():
     ]
     
     clients = [
-        Client(_id=ObjectId("64bfe2d70123456789abcdef"), name="John Doe", email="john@example.com", password="pass123", credit_history=[credit_history[0]]).save(),
-        Client(_id=ObjectId("64bfe2d80123456789abcdef"), name="Jane Smith", email="jane@example.com", password="pass123", credit_history=[credit_history[1]]).save(),
-        Client(_id=ObjectId("64bfe2d90123456789abcdef"), name="Alice Johnson", email="alice@example.com", password="pass123", credit_history=[credit_history[2]]).save()
+        Client(_id=ObjectId("64bfe2d70123456789abcdef"),
+               name="John Bobkov Alexandrovich",
+               email="john@example.com",
+               password="pass123",
+               workplace='АО "Крутые котята"',
+               post='Senior Python-Backend developer',
+               birthdate='2003-12-12',
+               owned_property=[Property(type="Квартира", value="1200000", legal="Квартира 5 м^2 в центре Петербурга по адресу наб. реки Карповки, д. 7")],
+               credit_history=[credit_history[0]]).save(),
+        Client(_id=ObjectId("64bfe2d80123456789abcdef"),
+               name="Jane Usacheva Vladimirovna",
+               email="jane@example.com",
+               password="pass123",
+               workplace='ООО "Смешные яички"',
+               post='Менеджер по лопатам',
+               birthdate='2001-09-11',
+               credit_history=[credit_history[1]]).save(),
+        Client(_id=ObjectId("64bfe2d90123456789abcdef"),
+               name="Alice Kamynina Bobkovna",
+               email="alice@example.com",
+               password="pass123",
+               workplace='АО "Крутые котята"',
+               post='Почтальон',
+               owned_property=[Property(type="Квартира", value="200000", legal="Квартира 40 м^2 в центре Светлогорска по адресу ул. Калинина, д. 48")],
+               birthdate='2003-10-15',
+               credit_history=[credit_history[2]]).save()
     ]
 
     credit_requests = [
