@@ -180,7 +180,7 @@ export default {
   },
   computed: {
     isSpouseFieldsDisabled() {
-      return this.profile.familyStatus !== "married";
+      return this.profile.familyStatus != "married" || this.isEditing == false;
     }
   },
   created() {

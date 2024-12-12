@@ -18,7 +18,8 @@
           type="number"
           id="loanAmount"
           v-model="loanAmount"
-          placeholder="Сумма кредита"
+          placeholder="В рублях"
+          
         />
         <div class="amount-range">
           <span>Минимальная сумма: {{ minLoanAmount }}</span>
@@ -39,7 +40,7 @@
 
       <div class="form-group">
         <label for="deposit">Залог:</label>
-        <input type="text" id="deposit" v-model="deposit" placeholder="Сумма залога" />
+        <input type="text" id="deposit" v-model="deposit" placeholder="В рублях" />
       </div>
 
       <div class="form-group">
