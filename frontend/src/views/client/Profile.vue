@@ -72,8 +72,6 @@
           <select v-model="profile.familyStatus" :disabled="!isEditing" id="familyStatus" class="full-width">
             <option value="single">Не женат/не замужем</option>
             <option value="married">Женат/Замужем</option>
-            <option value="divorced">Разведен</option>
-            <option value="widowed">Вдовец/Вдова</option>
           </select>
         </div>
         <div class="profile-field">
