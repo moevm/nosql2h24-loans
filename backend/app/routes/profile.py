@@ -47,6 +47,7 @@ def get_user_profile():
             "income": getattr(user, 'salary', ''),
             "incomeSpouse": getattr(user, 'spouse_salary', ''),
             "workplaceSpouse": getattr(user, 'spouse_workplace', ''),
+            "postSpouse": getattr(user, "spouse_post", ''),
             "properties": properties,
             "photo": getattr(user, 'photo', '')
         }
@@ -80,6 +81,7 @@ def client_profile_change():
     income = data.get("income")
     incomeSpouse = data.get("incomeSpouse")
     workplaceSpouse = data.get("workplaceSpouse")
+    postSpouse = data.get("postSpouse")
     properties = data.get("properties")
     photo = data.get("photo")
     
@@ -164,6 +166,8 @@ def client_profile_change():
             client.spouse_salary = float(incomeSpouse)
         if workplaceSpouse:
             client.spouse_workplace = workplaceSpouse
+        if postSpouse:
+            client.spouse_post = postSpouse
         if properties:
             client.owned_property = []
             for property in properties:

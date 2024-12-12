@@ -73,6 +73,7 @@ class Client(Document):
     marital_status = StringField(choices=["married", "single"])
     spouse_workplace = StringField()
     spouse_salary = FloatField()
+    spouse_post = StringField()
     amount_of_children = IntField()
     rating = FloatField(min_value=0.0, max_value=10.0, default=10.0)
     credit_history = ListField(EmbeddedDocumentField(CreditHistory))
