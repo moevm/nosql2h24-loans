@@ -99,7 +99,7 @@
               </div>
             </div>
           </th>
-          <th>Ссылка</th> <!-- Новый столбец для ссылки -->
+          <th></th> 
         </tr>
         <tr>
           <th @click="sortRequests('loan_name')">
@@ -140,7 +140,7 @@
           <td>{{ request.interest_rate }}</td>
           <td>{{ request.expiration_time }}</td>
           <td>
-            <a :href="'/request/' + request._id" target="_blank">Перейти</a> <!-- Ссылка на заявку -->
+            <button @click="goToRequestDetail(request._id)">🔗</button>
           </td>
         </tr>
       </tbody>
@@ -350,6 +350,11 @@ export default {
         second: '2-digit'
       };
       return new Date(date).toLocaleString('ru-RU', options);
+    },
+    
+    goToRequestDetail(requestId) {
+      localStorage.setItem('requestId', requestId);
+      this.$router.push('/request');
     }
   }
 };
@@ -358,7 +363,7 @@ export default {
 <style scoped>
 .client-request {
   width: 80%;
-  max-width: 1400px;
+  max-width: 1600px;
   margin: auto;
   padding: 20px;
   border: 1px solid #ddd;

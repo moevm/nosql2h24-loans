@@ -128,48 +128,52 @@
               </div>
             </div>
           </th>
+          <th></th> 
         </tr>
         <tr>
-          <th @click="sortRequests('loan_name')">
+          <th @click="sortCredits('loan_name')">
             Название кредита
             <SortArrow :sortDirection="sortDirection.loan_name" />
           </th>
-          <th @click="sortRequests('opening_date')">
+          <th @click="sortCredits('opening_date')">
             Дата открытия
             <SortArrow :sortDirection="sortDirection.opening_date" />
           </th>
-          <th @click="sortRequests('amount')">
+          <th @click="sortCredits('amount')">
             Сумма
             <SortArrow :sortDirection="sortDirection.amount" />
           </th>
-          <th @click="sortRequests('interest_rate')">
+          <th @click="sortCredits('interest_rate')">
             Ставка
             <SortArrow :sortDirection="sortDirection.interest_rate" />
           </th>
-          <th @click="sortRequests('expiration_time')">
+          <th @click="sortCredits('expiration_time')">
             Срок
             <SortArrow :sortDirection="sortDirection.expiration_time" />
           </th>
-          <th @click="sortRequests('monthly_payment')">
+          <th @click="sortCredits('monthly_payment')">
             Ежемесячный платеж
             <SortArrow :sortDirection="sortDirection.monthly_payment" />
           </th>
-          <th @click="sortRequests('next_payment_date')">
+          <th @click="sortCredits('next_payment_date')">
             Дата следующего платежа
             <SortArrow :sortDirection="sortDirection.next_payment_date" />
           </th>
-          <th @click="sortRequests('debt')">
+          <th @click="sortCredits('debt')">
             Задолженность
             <SortArrow :sortDirection="sortDirection.debt" />
           </th>
-          <th @click="sortRequests('payments_overdue')">
+          <th @click="sortCredits('payments_overdue')">
             Просрочено
             <SortArrow :sortDirection="sortDirection.payments_overdue" />
+          </th>
+          <th>
+            Ссылка
           </th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="request in requests" :key="request.id">
+        <tr v-for="request in requests" :key="request._id">
           <td>{{ request.loan_name }}</td>
           <td>{{ formatDate(request.opening_date) }}</td>
           <td>{{ request.amount }}</td>
@@ -179,6 +183,9 @@
           <td>{{ formatDate(request.next_payment_date) }}</td>
           <td>{{ request.debt }}</td>
           <td>{{ request.payments_overdue }}</td>
+          <td>
+            <button @click="goToCreditDetail(request._id)">🔗</button>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -242,16 +249,16 @@ export default {
     };
   },
   created() {
-    this.getRequests();
+    this.getCredits();
   },
   mounted() {
     document.title = "Кредиты";
   },
   methods: {
-    async getRequests() {
+    async getCredits() {
       const userId = localStorage.getItem('userId');
       try {
-        const response = await axios.get('http://127.0.0.1:5000/credit_request', {
+        const response = await axios.get('http://127.0.0.1:5000/get_active_credits', {
           params: {
             client_id: userId
           }
@@ -282,7 +289,7 @@ export default {
         payments_overdue_from: '',
         payments_overdue_to: ''
       };
-      this.getRequests();
+      this.getCredits();
     },
 
     validateFilters() {
@@ -290,6 +297,7 @@ export default {
         this.showNotification('Сумма "от" не может быть больше суммы "до"!', 'error');
         return false;
       }
+
       if (this.filters.interest_rate_from && this.filters.interest_rate_to && this.filters.interest_rate_from > this.filters.interest_rate_to) {
         this.showNotification('Ставка "от" не может быть больше ставки "до"!', 'error');
         return false;
@@ -298,27 +306,57 @@ export default {
         this.showNotification('Ставка не может быть больше 100 %!', 'error');
         return false;
       }
+
       if (this.filters.expiration_time_from && this.filters.expiration_time_to && this.filters.expiration_time_from > this.filters.expiration_time_to) {
         this.showNotification('Срок "от" не может быть больше срока "до"!', 'error');
         return false;
       }
+
       if (this.filters.opening_date_from && this.filters.opening_date_to && this.filters.opening_date_from > this.filters.opening_date_to) {
         this.showNotification('Дата начала не может быть больше даты окончания!', 'error');
         return false;
       }
+
+      if (this.filters.monthly_payment_from && this.filters.monthly_payment_to && this.filters.monthly_payment_from > this.filters.monthly_payment_to) {
+        this.showNotification('Ежемесячный платеж "от" не может быть больше платежа "до"!', 'error');
+        return false;
+      }
+
+      if (this.filters.debt_from && this.filters.debt_to && this.filters.debt_from > this.filters.debt_to) {
+        this.showNotification('Задолженность "от" не может быть больше задолженности "до"!', 'error');
+        return false;
+      }
+
+      if (this.filters.payments_overdue_from && this.filters.payments_overdue_to && this.filters.payments_overdue_from > this.filters.payments_overdue_to) {
+        this.showNotification('Количество просроченных платежей "от" не может быть больше "до"!', 'error');
+        return false;
+      }
+
+      const numericFilters = [
+        'amount_from', 'amount_to', 'interest_rate_from', 'interest_rate_to',
+        'expiration_time_from', 'expiration_time_to', 'monthly_payment_from',
+        'monthly_payment_to', 'debt_from', 'debt_to', 'payments_overdue_from', 'payments_overdue_to'
+      ];
+
+      for (const filter of numericFilters) {
+        if (this.filters[filter] && isNaN(this.filters[filter])) {
+          this.showNotification(`${filter.replace('_', ' ')} должно быть числом!`, 'error');
+          return false;
+        }
+      }
+
       return true;
     },
 
     async applyFilters() {
       if (!this.validateFilters()) return;
-
       const filter = {
         loan_name: this.loan_name.join('@'),
         ...this.filters
       };
       const userId = localStorage.getItem('userId');
       try {
-        const response = await axios.get('http://127.0.0.1:5000/filter_credit_request', {
+        const response = await axios.get('http://127.0.0.1:5000/filter_active_credits', {
           params: {
             client_id: userId,
             ...filter
@@ -336,10 +374,10 @@ export default {
       this.isNotificationVisible = false;
     },
 
-    async fetchRequests() {
+    async fetchCredits() {
       const userId = localStorage.getItem('userId');
       try {
-        const response = await axios.get('http://127.0.0.1:5000/sort_credit_request', {
+        const response = await axios.get('http://127.0.0.1:5000/sort_active_credits', {
           params: {
             client_id: userId,
             sort_field: this.sortField,
@@ -353,10 +391,10 @@ export default {
       }
     },
 
-    sortRequests(field) {
+    sortCredits(field) {
       this.sortDirection[field] = this.sortDirection[field] === 1 ? -1 : 1;
       this.sortField = field;
-      this.fetchRequests();
+      this.fetchCredits();
     },
 
     showNotification(message, type) {
@@ -372,6 +410,11 @@ export default {
         day: 'numeric'
       };
       return new Date(date).toLocaleDateString('ru-RU', options);
+    },
+    
+    goToCreditDetail(creditId) {
+      localStorage.setItem('creditId', creditId);
+      this.$router.push('/credit');
     }
   }
 };
@@ -381,7 +424,7 @@ export default {
 <style scoped>
 .client-request {
   width: 100%;
-  max-width: 1800px;
+  max-width: 2000px;
   margin: auto;
   padding: 20px;
   border: 1px solid #ddd;
