@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-#from routes.statistic import count_rating
+from routes.statistic import count_rating
 from models import CreditRequest, Credit, CreditHistory, Client, Coborrowers, Admin, InteractionHistory
 from utils.validation import *
 from utils.credit import generate_interest_rate
@@ -72,9 +72,17 @@ def create_credit_request():
         return jsonify({"error": "client_id and loan_type are required"}), 400
 
     interest_rate = generate_interest_rate(loan_name=loan_type, loan_amount=loan_amount, expiration_time=expiration_time)
-    new_credit = Credit(_id=ObjectId("".join(random.choices(string.hexdigits.lower(), k=24))), loan_name=loan_type, amount=loan_amount, interest_rate=interest_rate, deposit=deposit, 
+    monthly_payment = round((1 + interest_rate / 100) * loan_amount / expiration_time, 2)
+    new_credit = Credit(_id=ObjectId("".join(random.choices(string.hexdigits.lower(), k=24))),
+                        loan_name=loan_type,
+                        amount=loan_amount,
+                        interest_rate=interest_rate,
+                        deposit=deposit, 
+                        monthly_payment=monthly_payment,
                         co_borrowers=[Coborrowers(name=coborrower['fio'], workplace=coborrower['workplace'], phone=coborrower['contactPhone'], post=coborrower['post'], passport_number=coborrower['passportNumber'], passport_series=coborrower['passportSeries']) for coborrower in co_borrowers],
-                        expiration_time=expiration_time).save()
+                        expiration_time=expiration_time,
+                        debt=loan_amount,
+                        payments_overdue=0).save()
 
     credit_request = CreditRequest(
         _id=ObjectId("".join(random.choices(string.hexdigits.lower(), k=24))),
@@ -93,6 +101,7 @@ def get_all_credit_requests():
     client_id = request.args.get('client_id')
     credit_requests = CreditRequest.objects(client_id=client_id)
     result = [{"client_id": str(req.client_id), 
+               "_id": str(req._id),
                "loan_name": Credit.objects(_id=req.loan_id).first().loan_name, 
                "request_time": req.request_time.isoformat(), 
                "status": req.status,
@@ -102,6 +111,31 @@ def get_all_credit_requests():
             ]
 
     return jsonify(result), 200
+
+
+@bp.route('/get_active_credits', methods=["GET"])
+def get_all_active_credits():
+    print("Пришел запрос на получение активных кредитов пользователя:", request.args)
+    client_id = request.args.get("client_id")
+    credit_requests = CreditRequest.objects(client_id=client_id)
+    result = []
+    for req in credit_requests:
+        if req and req.status == "approved":
+            result.append({
+                "_id": str(req.loan_id),
+                "loan_name": Credit.objects(_id=req.loan_id).first().loan_name,
+                "opening_date": Credit.objects(_id=req.loan_id).first().opening_date,
+                "amount": Credit.objects(_id=req.loan_id).first().amount,
+                "interest_rate": Credit.objects(_id=req.loan_id).first().interest_rate,
+                "expiration_time": Credit.objects(_id=req.loan_id).first().expiration_time,
+                "monthly_payment": Credit.objects(_id=req.loan_id).first().monthly_payment,
+                "next_payment_date": Credit.objects(_id=req.loan_id).first().next_payment_date,
+                "debt": Credit.objects(_id=req.loan_id).first().debt,
+                "payments_overdue": Credit.objects(_id=req.loan_id).first().payments_overdue
+            })
+    
+    return jsonify(result), 200
+
 
 @bp.route('/credit_request_decision', methods=['GET'])
 def credit_request_decision():
@@ -132,8 +166,7 @@ def credit_request_decision():
             closing_date = None,
             status="opened"
         )
-        
-        #count_rating(credit_request.client_id)
+        count_rating(credit_request.client_id)
         print("saved")
         Client.objects(_id=credit_request.client_id).update_one(push__credit_history=credit_history)#.save()
         return jsonify({"message": "Credit request decision saved successfully"}), 200
@@ -155,5 +188,44 @@ def admins_request():
                "interest_rate": Credit.objects(_id=req.loan_id).first().interest_rate,
                "expiration_time": Credit.objects(_id=req.loan_id).first().expiration_time} for req in credit_requests
             ]
-    print(result)
+    # print(result)
+    return jsonify(result), 200
+
+@bp.route('/get_request_details', methods=['GET'])
+def get_request_details():
+    data = request.args
+    print("Пришел запрос на показ заявки с данными", data)
+    request_id = data.get('requestId')
+    credit_request = CreditRequest.objects(_id=request_id).first()
+    
+    coborrowers = Credit.objects(_id=credit_request.loan_id).first().co_borrowers
+    result = {
+        "loan_name" : Credit.objects(_id=credit_request.loan_id).first().loan_name,
+        "request_time" : credit_request.request_time,
+        "deposit" : Credit.objects(_id=credit_request.loan_id).first().deposit,
+        "status" : credit_request.status,
+        "amount" : Credit.objects(_id=credit_request.loan_id).first().amount,
+        "interest_rate" : Credit.objects(_id=credit_request.loan_id).first().interest_rate,
+        "expiration_time": Credit.objects(_id=credit_request.loan_id).first().expiration_time,
+        "co_borrowers": [coborrower.to_dict() for coborrower in coborrowers]
+    }
+    return jsonify(result), 200
+
+
+@bp.route('/get_credit_details', methods=['GET'])
+def get_credit_details():
+    data = request.args
+    print("Пришел запрос на показ заявки с данными", data)
+    credit_id = data.get('creditId')
+    credit = Credit.objects(_id=credit_id).first()
+    
+    result = {
+        "loan_name" : credit.loan_name,
+        "opening_date": credit.opening_date,
+        "amount" : credit.amount,
+        "interest_rate" : credit.interest_rate,
+        "expiration_time": credit.expiration_time,
+        "debt": credit.debt,
+        "next_payment_date": credit.next_payment_date
+    }
     return jsonify(result), 200
