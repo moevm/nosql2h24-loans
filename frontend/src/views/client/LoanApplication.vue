@@ -6,7 +6,6 @@
       :visible="notificationVisible"
       @close="closeNotification"
     />
-    <h1>Оформление кредита</h1>
     <p>Заполните информацию в профиле или проверьте ее актуальность!</p>
 
     <h2>Оформление кредита: {{ loanType }}</h2>
@@ -106,6 +105,9 @@ export default {
   created() {
     this.expirationTerms = this.generateExpirationTerms();
   },
+  mounted() {
+    document.title = "Оформление заявки на кредит";
+  },
   methods: {
     generateExpirationTerms() {
       const terms = [];
@@ -161,7 +163,7 @@ export default {
       };
 
       try {
-        const response = await axios.post('http://127.0.0.1:5000/credit_request', loanData);
+        const response = await axios.post('http://127.0.0.1:5000/create_credit_request', loanData);
         console.log('Заявка на кредит отправлена:', response.data);
         console.log(loanData);
         this.showNotification('Заявка на кредит успешно отправлена!', 'success');
@@ -203,7 +205,7 @@ export default {
   background-color: #f9f9f9;
 }
 
-h1, h2, h3 {
+h2, h3 {
   text-align: center;
   margin-bottom: 20px;
 }

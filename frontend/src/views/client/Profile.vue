@@ -186,6 +186,9 @@ export default {
   created() {
     this.getProfile();
   },
+  mounted() {
+    document.title = "Профиль";
+  },
   methods: {
     async getProfile() {
       const userId = localStorage.getItem("userId");

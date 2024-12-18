@@ -50,6 +50,9 @@ export default {
       notificationVisible: false,
     };
   },
+  mounted() {
+    document.title = "Вход";
+  },
   methods: {
     async submitForm() {
       try {

@@ -20,6 +20,9 @@ export default {
     userName() {
       return localStorage.getItem('userName') || 'Пользователь'; 
     }
+  },
+  mounted() {
+    document.title = "Главная";
   }
 };
 </script>

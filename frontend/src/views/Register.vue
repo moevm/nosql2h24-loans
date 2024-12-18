@@ -65,6 +65,9 @@ export default {
       notificationVisible: false,
     };
   },
+  mounted() {
+    document.title = "Регистрация";
+  },
   methods: {
     async submitForm() {
       if (this.password !== this.confirmPassword) {

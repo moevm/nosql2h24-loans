@@ -14,6 +14,9 @@ export default {
   components: {
     Button
   },
+  mounted() {
+    document.title = "Профиль";
+  },
   methods: {
     logout() {
       localStorage.setItem('authToken', false);

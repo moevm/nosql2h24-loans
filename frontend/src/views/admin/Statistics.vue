@@ -86,6 +86,9 @@ export default {
       file: null
     };
   },
+  mounted() {
+    document.title = "Статистика";
+  },
   methods: {
     async exportData() {
       try {

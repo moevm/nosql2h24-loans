@@ -13,7 +13,10 @@ export default {
     userName() {
       return localStorage.getItem('userName') || 'Админ'; 
     }
-  }
+  },
+  mounted() {
+    document.title = "Главная";
+  },
 };
 </script>
 
