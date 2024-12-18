@@ -68,7 +68,7 @@ def register():
                 spouse_workplace = "",
                 spouse_salary = 0,
                 amount_of_children = 0,
-                rating = 0,
+                rating = 10.0,
                 credit_history = []
             )
             
