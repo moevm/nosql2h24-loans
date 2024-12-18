@@ -75,9 +75,12 @@ def sort_credit_requests():
     return jsonify(result), 200
 
 
-@bp.route('/sort_credit', methods=['GET'])
+@bp.route('/sort_active_credits', methods=['GET'])
 def sort_credit():
     print('Пришел запрос на сортировку Credit со следующими аргументами:', request.args)
+    
+    sort_field = request.args.get('sort_field')
+    sort_direction = int(request.args.get('sort_direction', 0))
     
     #получение параметров
     client_id = request.args.get('client_id')
@@ -271,9 +274,7 @@ def filter_admins_request():
     if data.get('term_to'):
         credit_query_filter['expiration_time__lte'] = int(data['term_to'])
 
-    print("!!!!!!!!!!!!!!!!!!!!!!!!!!",credit_query_filter)
     filtered_credits = Credit.objects(**credit_query_filter)
-    print("ФИЛЬЕРЕД КРЕДИТС БЛАБЛАБЛА", len(filtered_credits))
 
     if data.get('fio'):
         client_filter['name__icontains'] = str(data['fio'])
@@ -321,11 +322,76 @@ def filter_admins_request():
     return jsonify(response_data), 200
 
 
-@bp.route("/active_credits", methods=['POST'])
+@bp.route("/filter_active_credits", methods=['GET'])
 def filter_active_credits():
-    pass
+    print("Пришел запрос на фильтрацию активных кредитов")
+    data = request.args
+    credit_query_filter = {}
+    print(data.get('loan_name').split('@'))
     
+    if data.get('loan_name'):
+        credit_query_filter['loan_name__in'] = data['loan_name'].split('@')
+    if data.get('amount_from'):
+        credit_query_filter['amount__gte'] = float(data['amount_from'])
+    if data.get('amount_to'):
+        credit_query_filter['amount__lte'] = float(data['amount_to'])
+    if data.get('rate_from'):
+        credit_query_filter['interest_rate__gte'] = float(data['rate_from'])
+    if data.get('rate_to'):
+        credit_query_filter['interest_rate__lte'] = float(data['rate_to'])
+    if data.get('term_from'):
+        credit_query_filter['expiration_time__gte'] = int(data['term_from']) 
+    if data.get('term_to'):
+        credit_query_filter['expiration_time__lte'] = int(data['term_to'])
+    if data.get('opening_date_from'):
+        credit_query_filter['opening_time__gte'] = datetime.fromisoformat(data['date_from'])
+    if data.get('opening_date_to'):
+        credit_query_filter['opening_time__lte'] = datetime.fromisoformat(data['date_to'])
+    if data.get('monhtly_payment_from'):
+        credit_query_filter['monthly_payment__gte'] = int(data['monhtly_payment_from'])
+    if data.get('monthly_payment_to'):
+        credit_query_filter['monthly_payment__lte'] = int(data['monthly_payment_to'])
+    if data.get('next_payment_date_from'):
+        credit_query_filter['next_payment_date__gte'] = datetime.fromisoformat(data['next_payment_date_from'])
+    if data.get('next_payment_date_to'):
+        credit_query_filter['next_payment_date__lte'] = datetime.fromisoformat(data['next_payment_date_to'])
+    if data.get('debt_from'):
+        credit_query_filter['debt__gte'] = int(data['debt_from'])
+    if data.get('debt_to'):
+        credit_query_filter['debt__lte'] = int(data['debt_to'])
+    if data.get('payment_overdue_from'):
+        credit_query_filter['payment_overdue__gte'] = int(data['payment_overdue_from'])
+    if data.get('payment_overdue_to'):
+        credit_query_filter['payment_overdue__lte'] = int(data['payment_overdue_to'])
 
+    filtered_credits = Credit.objects(**credit_query_filter)
+
+    if not filtered_credits:
+        return jsonify({}), 200
+
+    loan_ids = [credit._id for credit in filtered_credits]
+
+    response_data = []
+    
+    for history in Client.objects(_id=data['client_id']).first().credit_history:
+        if history.loan_id in loan_ids and ( history.status == "opened" or history.status == "expired" ):
+            credit = Credit.objects(_id=history.loan_id).first()
+            response_data.append ({
+               "_id" : str(history.loan_id),
+               "loan_name" : credit.loan_name,
+               "opening_date" :  credit.opening_date.isoformat(),
+               "expiration_time" : credit.expiration_time,
+               "amount" : credit.amount,
+               "interest_rate" : credit.interest_rate,
+               "monthly_payment" : credit.monthly_payment,
+               "next_payment_date" : None,#credit.next_payment_date.isoformat(),
+               "debt" : credit.debt,
+               "payments_overdue" : credit.payments_overdue,
+            })
+
+    return jsonify(response_data), 200
+    
+    
 @bp.route("/filter_credit_history", methods=['POST'])
 def filter_history():
     pass
