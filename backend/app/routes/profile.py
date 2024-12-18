@@ -22,8 +22,15 @@ def get_user_profile():
         birthdate = getattr(user, 'birthdate', '')
         if birthdate:
             birthdate = birthdate.isoformat()
-            
-        first_name, last_name, middle_name = user.name.split(' ')
+        
+        current_fio = user.name.split(' ')
+        first_name, last_name, middle_name = '', '', ''
+        if current_fio[0]:
+            first_name = current_fio[0]
+        if len(current_fio) > 1 and [1]:
+            last_name = current_fio[1]
+        if len(current_fio) > 2 and current_fio[2]:
+            middle_name = current_fio[2]
         birthdate = getattr(user, 'birthdate', '')
         if birthdate:
             birthdate = birthdate.strftime('%Y-%m-%d')
@@ -126,6 +133,8 @@ def client_profile_change():
         return jsonify({"error": "Client not found"}), 404
     
     current_fio = client.name.split(' ')
+    while len(current_fio) != 3:
+        current_fio.append('')
     try:
         if first_name:
             current_fio[0] = first_name

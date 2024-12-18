@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, redirect, url_for
 from models import CreditRequest, Credit, CreditHistory, Client
 from datetime import datetime
 
@@ -192,6 +192,25 @@ def filter_credit_request():
     if data.get('term_to'):
         credit_query_filter['expiration_time__lte'] = int(data['term_to'])
 
+    if not credit_query_filter:
+        credit_requests = CreditRequest.objects(client_id=client_id)
+        response_data = []
+        for req in credit_requests:
+            credit_info = Credit.objects.get(_id=req.loan_id)
+            response_data.append({
+                '_id': str(req._id),
+                'client_id': str(req.client_id),
+                'loan_id': str(req.loan_id),
+                'request_time': req.request_time.isoformat(),
+                'status': req.status,
+                'loan_name': credit_info.loan_name,
+                'amount': credit_info.amount,
+                'interest_rate': credit_info.interest_rate,
+                'expiration_time': credit_info.expiration_time,
+            })
+            
+        return jsonify(response_data), 200
+
     filtered_credits = Credit.objects(**credit_query_filter)
 
     if not filtered_credits:
@@ -252,7 +271,9 @@ def filter_admins_request():
     if data.get('term_to'):
         credit_query_filter['expiration_time__lte'] = int(data['term_to'])
 
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!",credit_query_filter)
     filtered_credits = Credit.objects(**credit_query_filter)
+    print("ФИЛЬЕРЕД КРЕДИТС БЛАБЛАБЛА", len(filtered_credits))
 
     if data.get('fio'):
         client_filter['name__icontains'] = str(data['fio'])
@@ -260,12 +281,11 @@ def filter_admins_request():
         client_filter['rating__gte'] = float(data['rating_from'])
     if data.get('rating_to'):
         client_filter['rating_lte'] = float(data['rating_to'])
-
+    
     filtered_clients = Client.objects(**client_filter)
 
     if not filtered_credits:
         return jsonify({}), 200
-
     loan_ids = [credit._id for credit in filtered_credits]
     client_ids = [client._id for client in filtered_clients]
 

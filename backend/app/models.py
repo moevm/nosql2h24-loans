@@ -38,7 +38,6 @@ class Coborrowers(EmbeddedDocument):
             "post": self.post,
             "passport_series": self.passport_series,
             "passport_number": self.passport_number,
-            "salary": self.salary,
             "phone": self.phone,
         }
 

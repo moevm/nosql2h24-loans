@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
+#from routes.statistic import count_rating
 from models import CreditRequest, Credit, CreditHistory, Client, Coborrowers, Admin, InteractionHistory
 from utils.validation import *
+from utils.credit import generate_interest_rate
 from mongoengine import ObjectIdField
 from datetime import datetime
 from bson import ObjectId
@@ -8,7 +10,7 @@ import random, string
 
 bp = Blueprint('credit_request_routes', __name__)
 
-@bp.route('/credit_request', methods=['POST'])
+@bp.route('/create_credit_request', methods=['POST'])
 def create_credit_request():
     data = request.get_json()
     print(f"Пришел запрос на кредит: ", data)
@@ -62,7 +64,6 @@ def create_credit_request():
                 errors.append("Серия паспорта должен иметь длину 4 и содержать исключительно числа.")
                 break
             
-        
     if errors:
         print(errors)
         return jsonify({"error": "Validation failed", "details": errors}), 400
@@ -70,7 +71,8 @@ def create_credit_request():
     if not client_id or not loan_type:
         return jsonify({"error": "client_id and loan_type are required"}), 400
 
-    new_credit = Credit(_id=ObjectId("".join(random.choices(string.hexdigits.lower(), k=24))), loan_name=loan_type, amount=loan_amount, interest_rate=5.5, deposit=deposit, 
+    interest_rate = generate_interest_rate(loan_name=loan_type, loan_amount=loan_amount, expiration_time=expiration_time)
+    new_credit = Credit(_id=ObjectId("".join(random.choices(string.hexdigits.lower(), k=24))), loan_name=loan_type, amount=loan_amount, interest_rate=interest_rate, deposit=deposit, 
                         co_borrowers=[Coborrowers(name=coborrower['fio'], workplace=coborrower['workplace'], phone=coborrower['contactPhone'], post=coborrower['post'], passport_number=coborrower['passportNumber'], passport_series=coborrower['passportSeries']) for coborrower in co_borrowers],
                         expiration_time=expiration_time).save()
 
@@ -85,7 +87,7 @@ def create_credit_request():
     return jsonify({"message": "Credit request created successfully", "request_id": str(credit_request.id)}), 201
 
 
-@bp.route('/credit_request/', methods=['GET'])
+@bp.route('/get_credit_requests', methods=['GET'])
 def get_all_credit_requests():
     print("Пришел запрос на получение списка заявок на кредит:", request.args)
     client_id = request.args.get('client_id')
@@ -123,15 +125,16 @@ def credit_request_decision():
     credit_request.status = status
     credit_request.save()
     Admin.objects(_id=admin_id).update_one(push__interaction_history=new_interaction)#.save()
-    if status == True:
+    if status == "approved":
         credit_history = CreditHistory(
             _id=ObjectId("".join(random.choices(string.hexdigits.lower(), k=24))),
-            client_id=credit_request.client_id,
             loan_id=credit_request.loan_id,
-            closing_time = None,
+            closing_date = None,
             status="opened"
         )
-        credit_history.save()
+        
+        #count_rating(credit_request.client_id)
+        print("saved")
         Client.objects(_id=credit_request.client_id).update_one(push__credit_history=credit_history)#.save()
         return jsonify({"message": "Credit request decision saved successfully"}), 200
     else:

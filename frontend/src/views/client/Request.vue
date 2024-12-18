@@ -193,11 +193,14 @@ export default {
   created() {
     this.getRequests();
   },
+  mounted() {
+    document.title = "Заявки";
+  },
   methods: {
     async getRequests() {
       const userId = localStorage.getItem('userId');
       try {
-        const response = await axios.get('http://127.0.0.1:5000/credit_request', {
+        const response = await axios.get('http://127.0.0.1:5000/get_credit_requests', {
           params: {
             client_id: userId
           }

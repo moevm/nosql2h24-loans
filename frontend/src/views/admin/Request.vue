@@ -215,6 +215,9 @@ export default {
   created() {
     this.getRequests();
   },
+  mounted() {
+    document.title = "Заявки";
+  },
   methods: {
     async getRequests() {
       const userId = localStorage.getItem('userId');
