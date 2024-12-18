@@ -99,6 +99,7 @@
               </div>
             </div>
           </th>
+          <th>Ссылка</th> <!-- Новый столбец для ссылки -->
         </tr>
         <tr>
           <th @click="sortRequests('loan_name')">
@@ -125,6 +126,9 @@
             Срок
             <SortArrow :sortDirection="sortDirection.expiration_time" />
           </th>
+          <th>
+            Ссылка
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -135,6 +139,9 @@
           <td>{{ request.amount }}</td>
           <td>{{ request.interest_rate }}</td>
           <td>{{ request.expiration_time }}</td>
+          <td>
+            <a :href="'/request/' + request._id" target="_blank">Перейти</a> <!-- Ссылка на заявку -->
+          </td>
         </tr>
       </tbody>
     </table>
@@ -145,6 +152,7 @@
       @close="closeNotification" />
   </div>
 </template>
+
 
 <script>
 import axios from 'axios';
