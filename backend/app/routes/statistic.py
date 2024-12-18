@@ -9,45 +9,44 @@ import logging
 bp = Blueprint('statistic_routes', __name__)
 connect(db="credit_database", host="localhost", port=27017)
 
-# def count_rating(client_id):
-#     counted_rating = 0
-#     client = Client.objects(_id=client_id).first()
-#     if client.workplace is not "":
-#         counted_rating += 30 
-#     else:
-#         counted_rating -= 50
-#     counted += (client.salary / 390000)
-#     if client.amount_of_children > 0:
-#         counted_rating -= 5 * client.amount_of_children
-#     if client.marital_status == "married" and client.spouse_workplace is not "":
-#         counted_rating += (client.spouse_salary / 520000)
-#     for house in client.owned_property:
-#         counted_rating += house.value / 13000000 
-#     for history in client.credit_history:
-#         if history.status == "closed":
-#             counted_rating += 5 / 13 
-#         elif history.status == "expired":
-#             counted_rating -= 10 / 13
-#         elif history.status == "opened":
-#             counted_rating -= 5 / 13
-#             credit = Credit.objects(_id=history.loan_id).first()
-#             count_rating += (credit.deposit / 260000) 
-#             #if credit.co_borrowers:
-#              #   for coborrower in credit.co_borrowers:
-#               #      count_rating += (coborrower.salary / 650000) 
-    
-#     if counted_rating > 10:
-#         counted_rating = 10
-#     if counted_rating < 0:
-#         counted_rating = 0
-#     print(counted_rating, "рейтинг гомяка")
-#     client.rating = round(counted_rating, 1)
-#     client.update_one(rating=counted_rating)
+def count_rating(client_id):
+    counted_rating = 0.0
+    client = Client.objects(_id=client_id).first()
+    if client.workplace != "":
+        counted_rating += 50.0/13.0
+    else:
+        counted_rating -= 50.0/13.0
+    counted_rating += (client.salary / 325000.0)
+    if client.amount_of_children > 0:
+        counted_rating -= 5 * client.amount_of_children /13.0
+    if client.marital_status == "married" and client.spouse_workplace != "":
+        counted_rating += (client.spouse_salary / 520000.0)
+    for house in client.owned_property:
+        counted_rating += house.value / 13000000.0
+    for history in client.credit_history:
+        if history.status == "closed":
+            counted_rating += 5.0 / 13.0 
+        elif history.status == "expired":
+            counted_rating -= 10.0 / 13.0
+        elif history.status == "opened":
+            counted_rating -= 5.0 / 13.0
+            credit = Credit.objects(_id=history.loan_id).first()
+            if credit:
+                counted_rating += (credit.deposit / 260000.0) 
+            #if credit.co_borrowers:
+             #   for coborrower in credit.co_borrowers:
+              #      count_rating += (coborrower.salary / 650000) 
+    print(counted_rating)
+    if counted_rating > 10:
+        counted_rating = 10
+    if counted_rating < 0:
+        counted_rating = 0
+    print(counted_rating, "рейтинг гомяка")
+    Client.objects(_id=client_id).update_one(rating=round(counted_rating, 1))
 
 
 @bp.route('/database_export', methods=['GET'])
 def export_database():
-    print('hererherhehrehrehre')
     collections = {
         "clients": Client.objects,
         "admins": Admin.objects,
