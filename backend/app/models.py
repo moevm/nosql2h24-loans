@@ -93,9 +93,11 @@ class Admin(Document):
     sex = StringField()
     password = StringField(required=True)
     age = IntField()
-    phone = StringField(max_length=10)
+    phone = StringField(max_length=20)
     post = StringField()
     birthdate = DateField()
+    passport_series = StringField(min_length=4, max_length=4)
+    passport_number = StringField(min_length=6, max_length=6)
     interaction_history = ListField(EmbeddedDocumentField(InteractionHistory))
 
 
@@ -107,7 +109,7 @@ class Credit(Document):
     amount = FloatField()
     interest_rate = FloatField()
     monthly_payment = FloatField()
-    next_payment_date = DateField()
+    next_payment_date = DateField(default=datetime.utcnow())
     debt = FloatField()
     payments_overdue = IntField()
     co_borrowers = ListField(EmbeddedDocumentField(Coborrowers))
