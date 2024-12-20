@@ -345,20 +345,20 @@ def filter_active_credits():
         credit_query_filter['amount__gte'] = float(data['amount_from'])
     if data.get('amount_to'):
         credit_query_filter['amount__lte'] = float(data['amount_to'])
-    if data.get('rate_from'):
-        credit_query_filter['interest_rate__gte'] = float(data['rate_from'])
-    if data.get('rate_to'):
-        credit_query_filter['interest_rate__lte'] = float(data['rate_to'])
-    if data.get('term_from'):
-        credit_query_filter['expiration_time__gte'] = int(data['term_from']) 
-    if data.get('term_to'):
-        credit_query_filter['expiration_time__lte'] = int(data['term_to'])
+    if data.get('interest_rate_from'):
+        credit_query_filter['interest_rate__gte'] = float(data['interest_rate_from'])
+    if data.get('interest_rate_to'):
+        credit_query_filter['interest_rate__lte'] = float(data['interest_rate_to'])
+    if data.get('expiration_time_from'):
+        credit_query_filter['expiration_time__gte'] = int(data['expiration_time_from']) 
+    if data.get('expiration_time_to'):
+        credit_query_filter['expiration_time__lte'] = int(data['expiration_time_to'])
     if data.get('opening_date_from'):
-        credit_query_filter['opening_time__gte'] = datetime.fromisoformat(data['date_from'])
+        credit_query_filter['opening_time__gte'] = datetime.fromisoformat(data['opening_date_from'])
     if data.get('opening_date_to'):
-        credit_query_filter['opening_time__lte'] = datetime.fromisoformat(data['date_to'])
-    if data.get('monhtly_payment_from'):
-        credit_query_filter['monthly_payment__gte'] = int(data['monhtly_payment_from'])
+        credit_query_filter['opening_time__lte'] = datetime.fromisoformat(data['opening_date_to'])
+    if data.get('monthly_payment_from'):
+        credit_query_filter['monthly_payment__gte'] = int(data['monthly_payment_from'])
     if data.get('monthly_payment_to'):
         credit_query_filter['monthly_payment__lte'] = int(data['monthly_payment_to'])
     if data.get('next_payment_date_from'):
@@ -369,10 +369,10 @@ def filter_active_credits():
         credit_query_filter['debt__gte'] = int(data['debt_from'])
     if data.get('debt_to'):
         credit_query_filter['debt__lte'] = int(data['debt_to'])
-    if data.get('payment_overdue_from'):
-        credit_query_filter['payment_overdue__gte'] = int(data['payment_overdue_from'])
+    if data.get('payments_overdue_from'):
+        credit_query_filter['payment_overdue__gte'] = int(data['payments_overdue_from'])
     if data.get('payment_overdue_to'):
-        credit_query_filter['payment_overdue__lte'] = int(data['payment_overdue_to'])
+        credit_query_filter['payments_overdue_to'] = int(data['payments_overdue_to'])
 
     filtered_credits = Credit.objects(**credit_query_filter)
 
