@@ -20,7 +20,6 @@ CORS(app)
 disconnect()
 connect(host=app.config['MONGO_URI'])
 
-
 @app.before_first_request
 def check_collections():
     client = MongoClient(app.config['MONGO_URI'])
