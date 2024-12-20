@@ -291,7 +291,7 @@ def filter_admins_request():
     if data.get('rating_from'):
         client_filter['rating__gte'] = float(data['rating_from'])
     if data.get('rating_to'):
-        client_filter['rating_lte'] = float(data['rating_to'])
+        client_filter['rating__lte'] = float(data['rating_to'])
     
     filtered_clients = Client.objects(**client_filter)
 
@@ -354,9 +354,9 @@ def filter_active_credits():
     if data.get('expiration_time_to'):
         credit_query_filter['expiration_time__lte'] = int(data['expiration_time_to'])
     if data.get('opening_date_from'):
-        credit_query_filter['opening_time__gte'] = datetime.fromisoformat(data['opening_date_from'])
+        credit_query_filter['opening_date__gte'] = datetime.fromisoformat(data['opening_date_from'])
     if data.get('opening_date_to'):
-        credit_query_filter['opening_time__lte'] = datetime.fromisoformat(data['opening_date_to'])
+        credit_query_filter['opening_date__lte'] = datetime.fromisoformat(data['opening_date_to'])
     if data.get('monthly_payment_from'):
         credit_query_filter['monthly_payment__gte'] = int(data['monthly_payment_from'])
     if data.get('monthly_payment_to'):
@@ -370,9 +370,9 @@ def filter_active_credits():
     if data.get('debt_to'):
         credit_query_filter['debt__lte'] = int(data['debt_to'])
     if data.get('payments_overdue_from'):
-        credit_query_filter['payment_overdue__gte'] = int(data['payments_overdue_from'])
-    if data.get('payment_overdue_to'):
-        credit_query_filter['payments_overdue_to'] = int(data['payments_overdue_to'])
+        credit_query_filter['payments_overdue__gte'] = int(data['payments_overdue_from'])
+    if data.get('payments_overdue_to'):
+        credit_query_filter['payments_overdue__lte'] = int(data['payments_overdue_to'])
 
     filtered_credits = Credit.objects(**credit_query_filter)
 
