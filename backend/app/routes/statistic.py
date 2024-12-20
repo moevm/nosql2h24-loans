@@ -5,6 +5,7 @@ from mongoengine import connect
 import json
 from io import BytesIO
 import logging
+import numpy as np
 
 bp = Blueprint('statistic_routes', __name__)
 connect(db="credit_database", host="localhost", port=27017)
@@ -88,3 +89,37 @@ def import_database():
         CreditRequest(**credit_request_data).save()
     print("Данные успешно загружены из дампа")
     return jsonify({"adminName": Admin.objects(_id=request.form.get('user_id')).first().name, "message": "Данные успешно загружены из дампа" }), 200
+
+
+@bp.route('/get_hist_data', methods=['GET'])
+def get_graphic():
+    data = request.args
+    print("Пришел запрос на получение графиков со следующими данными", data)
+    
+    credit_type = data.get("credit_type")
+    filter_type = data.get("filter_type")
+    dataset = []
+    for client in Client.objects:
+        for history in client.credit_history:
+            credit = Credit.objects(_id=history.loan_id).first()
+            if credit and credit.loan_name == credit_type:
+                if filter_type == "amount":
+                    dataset.append(credit.amount)
+                elif filter_type == "expiration_time":
+                    dataset.append(credit.expiration_time)
+    if dataset == []:
+        bins = np.linspace(0, 100, num=10) 
+    else:
+        bins = np.linspace(0, max(dataset), num=10)           
+    hist, bin_edges = np.histogram(dataset, bins=bins)
+    labels = []
+    for i in range(0, len(bin_edges) - 1):
+        labels.append(f"{int(bin_edges[i])}" + "-" + f"{int(bin_edges[i+1])}")
+        
+    result = {
+        "labels": labels,
+        "values": hist.astype(int).tolist()
+    }
+    
+    print(result)
+    return jsonify(result), 200
