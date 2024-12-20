@@ -8,6 +8,7 @@ from routes.request_routes import bp as request_routes_bp
 from routes.filter import bp as filter_routes_bp
 from routes.profile import bp as profile_routes
 from routes.statistic import bp as statistic_routes
+from routes.history import bp as history_routes
 from models import Client
 from pymongo import MongoClient
 from utils.dump import create_sample_data
@@ -32,6 +33,7 @@ app.register_blueprint(request_routes_bp)
 app.register_blueprint(filter_routes_bp)
 app.register_blueprint(profile_routes)
 app.register_blueprint(statistic_routes)
+app.register_blueprint(history_routes)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
