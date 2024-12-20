@@ -19,10 +19,6 @@ def get_user_profile():
     if user_type == 'client':
         user = Client.objects(_id=ObjectId(user_id)).first()
         
-        birthdate = getattr(user, 'birthdate', '')
-        if birthdate:
-            birthdate = birthdate.isoformat()
-        
         current_fio = user.name.split(' ')
         first_name, last_name, middle_name = '', '', ''
         if current_fio[0]:
@@ -60,6 +56,32 @@ def get_user_profile():
         }
     elif user_type == 'admin':
         user = Admin.objects(_id=ObjectId(user_id)).first()
+    
+        current_fio = user.name.split(' ')
+        first_name, last_name, middle_name = '', '', ''
+        if current_fio[0]:
+            first_name = current_fio[0]
+        if len(current_fio) > 1 and [1]:
+            last_name = current_fio[1]
+        if len(current_fio) > 2 and current_fio[2]:
+            middle_name = current_fio[2]
+            
+        birthdate = getattr(user, 'birthdate', '')
+        if birthdate:
+            birthdate = birthdate.strftime('%Y-%m-%d')
+            
+        profile_data = {
+            "firstName": first_name,
+            "lastName": last_name,
+            "middleName": middle_name,
+            "email": getattr(user, 'email', ''),
+            "post": getattr(user, 'post', ''),
+            "gender": getattr(user, 'sex', ''),
+            "contactPhone": getattr(user, 'phone', ''),
+            "birthdate": birthdate,
+            "passportNumber": getattr(user, 'passport_number', ''),
+            'passportSeries': getattr(user, "passport_series", ''),
+        }
     else:
         return jsonify({"message": "User type doesn't provided"}), 400
     print(f"Данные профиля", profile_data)
@@ -203,3 +225,87 @@ def client_profile_change():
     client.save()
     
     return jsonify({"message": "Client profile updated successfully"}), 200
+
+
+@bp.route('/admin_profile_change', methods=["POST"])
+def admin_profile_change():
+    data = request.get_json()
+    print("Пришел запрос на изменение данных для админа:", data)
+    
+    # Парсинг переданных значений
+    admin_id = data.get("admin_id")
+    first_name = data.get("firstName") # имя
+    last_name = data.get("lastName") # фамилия
+    middle_name = data.get("middleName") # отчество
+    email = data.get("email")
+    gender = data.get("gender")
+    birthdate = data.get("birthdate")
+    passport_series = data.get("passportSeries")
+    passport_number = data.get("passportNumber")
+    contactPhone = data.get("contactPhone")
+    
+    errors = []
+    
+    if not admin_id or not ObjectId.is_valid(admin_id):
+        errors.append("Неверный admin_id.")
+    if re.search(r'\d', first_name):
+        errors.append("Имя не должно содержать числа.")
+    if re.search(r'\d', last_name):
+        errors.append("Фамилия не должна содержать числа.")
+    if re.search(r'\d', middle_name):
+        errors.append("Отчество не должно содержать числа.")
+    if email and not re.match(r'[^@]+@[^@]+\.[^@]+', email):
+        errors.append("Некорректный вид email.")
+    if contactPhone and not validate_phone_number(contactPhone):
+        errors.append("Некорректный формат телефона.")
+    if passport_number and not validate_passport_number(passport_number):
+        errors.append("Номер паспорта должен иметь длину 6 и содержать исключительно числа.")
+    if passport_series and not validate_passport_series(passport_series):
+        errors.append("Серия паспорта должен иметь длину 4 и содержать исключительно числа.")
+    
+    if errors:
+        print(errors)
+        return jsonify({"error": "Validation failed", "details": errors}), 400
+    
+    admin = Admin.objects(_id=ObjectId(admin_id)).first()
+    if not admin:
+        return jsonify({"error": "Admin not found"}), 404
+    
+    current_fio = admin.name.split(' ')
+    while len(current_fio) != 3:
+        current_fio.append('')
+        
+    try:
+        if first_name:
+            current_fio[0] = first_name
+        if last_name:
+            current_fio[1] = last_name
+        if middle_name:
+            current_fio[2] = middle_name
+        
+        admin.name = ' '.join(current_fio)
+        if email:
+            admin.email = email
+        if passport_number:
+            admin.passport_number = passport_number
+        if passport_series:
+            admin.passport_series = passport_series
+        if gender:
+            admin.sex = gender
+        if birthdate:
+            admin.birthdate = datetime.strptime(birthdate, '%Y-%m-%d')
+        if contactPhone:
+            try:
+                admin.phone = contactPhone
+            except Exception as e:
+                errors = ["Номер телефона имеет некорректную длину или формат."]
+                print(errors)
+                return jsonify({"error": "Validation failed", "details": errors}), 400
+    except Exception as e:
+        error_message = f"Произошла ошибка на сервере: {e}"
+        print(error_message)
+        return jsonify({"message": error_message}), 500
+    
+    admin.save()
+    
+    return jsonify({"message": "Admin profile updated successfully"}), 200
