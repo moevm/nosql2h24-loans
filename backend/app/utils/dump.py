@@ -9,17 +9,105 @@ from models import Credit, CreditHistory, CreditRequest, Client, Admin, Interact
 def create_sample_data():
 
     credits = [
-        Credit(_id=ObjectId("64bfe2e30123456789abcdef"), loan_name="Молодежный кредит", opening_date=datetime(2024, 9, 1), amount=500000, interest_rate=5.5, next_payment_date=datetime.now() + timedelta(days=10),  monthly_payment=150, debt=100000, expiration_time = 100, payments_overdue=0, co_borrowers=[], deposit=0).save(),
-        Credit(_id=ObjectId("64bfe2e40123456789abcdef"), loan_name="Автокредит",  opening_date=datetime(2023, 8, 12), amount=150000, interest_rate=4.2, monthly_payment=300, debt=10000, expiration_time = 100, payments_overdue=2, co_borrowers=[], deposit=100).save(),
-        Credit(_id=ObjectId("64bfe2e50123456789abcdef"), loan_name="Ипотека",  opening_date=datetime(2022, 10, 15), amount=2000000, interest_rate=3.8, monthly_payment=1200, next_payment_date=datetime.now() + timedelta(days=20), debt=10000, expiration_time = 200, payments_overdue=1, co_borrowers=[], deposit=1020).save(),
-        Credit(_id=ObjectId("64bfe2e40123466789abcdef"), loan_name="Автокредит",  opening_date=datetime(2021, 5, 1), amount=150000, interest_rate=4.2, monthly_payment=300, next_payment_date=datetime.now() + timedelta(days=7), debt=10000, expiration_time = 100, payments_overdue=0, co_borrowers=[], deposit=20).save(),
-        Credit(_id=ObjectId("64bfe2e50123476789abcdef"), loan_name="Ипотека",  opening_date=datetime(2020, 6, 12), amount=2000000, interest_rate=3.8, monthly_payment=1200, debt=0, expiration_time = 200, payments_overdue=0, co_borrowers=[], deposit=102).save()
+        Credit(
+            _id=ObjectId("64bfe2e30123456789abcdef"),
+            loan_name="Молодежный кредит",
+            opening_date=datetime(2024, 9, 1),
+            amount=500000,
+            interest_rate=5.5,
+            next_payment_date=datetime.now() + timedelta(days=10),
+            monthly_payment=150,
+            debt=100000,
+            expiration_time=100,
+            payments_overdue=0,
+            co_borrowers=[],
+            deposit=0
+        ).save(),
+        Credit(
+            _id=ObjectId("64bfe2e40123456789abcdef"),
+            loan_name="Автокредит",
+            opening_date=datetime(2023, 8, 12),
+            amount=150000,
+            interest_rate=4.2,
+            next_payment_date=datetime.now() + timedelta(days=15),
+            monthly_payment=300,
+            debt=10000,
+            expiration_time=100,
+            payments_overdue=2,
+            co_borrowers=[],
+            deposit=100
+        ).save(),
+        Credit(
+            _id=ObjectId("64bfe2e50123456789abcdef"),
+            loan_name="Ипотека",
+            opening_date=datetime(2022, 10, 15),
+            amount=2000000,
+            interest_rate=3.8,
+            next_payment_date=datetime.now() + timedelta(days=20),
+            monthly_payment=1200,
+            debt=10000,
+            expiration_time=200,
+            payments_overdue=1,
+            co_borrowers=[],
+            deposit=1020
+        ).save(),
+        Credit(
+            _id=ObjectId("64bfe2e40123466789abcdef"),
+            loan_name="Автокредит",
+            opening_date=datetime(2021, 5, 1),
+            amount=150000,
+            interest_rate=4.2,
+            next_payment_date=datetime.now() + timedelta(days=7),
+            monthly_payment=300,
+            debt=10000,
+            expiration_time=100,
+            payments_overdue=0,
+            co_borrowers=[],
+            deposit=20
+        ).save(),
+        Credit(
+            _id=ObjectId("64bfe2e50123476789abcdef"),
+            loan_name="Ипотека",
+            opening_date=datetime(2020, 6, 12),
+            amount=2000000,
+            interest_rate=3.8,
+            next_payment_date=datetime.now() + timedelta(days=30),
+            monthly_payment=1200,
+            debt=0,
+            expiration_time=200,
+            payments_overdue=0,
+            co_borrowers=[],
+            deposit=102
+        ).save()
     ]
 
     credit_history = [
-        CreditHistory(_id=ObjectId("64bfe2d10123456789abcdef"), loan_id=credits[0]._id, status="opened"),
-        CreditHistory(_id=ObjectId("64bfe2d30123456789abcdef"), loan_id=credits[1]._id, status="closed", closing_date=datetime(2024, 10, 1)),
-        CreditHistory(_id=ObjectId("64bfe2d50123456789abcdef"), loan_id=credits[2]._id, status="opened")
+        CreditHistory(
+            _id=ObjectId("64bfe2d10123456789abcdef"),
+            loan_id=credits[0]._id,
+            status="opened"
+        ),
+        CreditHistory(
+            _id=ObjectId("64bfe2d20123456789abcdef"),
+            loan_id=credits[1]._id,
+            status="closed",
+            closing_date=datetime(2024, 10, 1)
+        ),
+        CreditHistory(
+            _id=ObjectId("64bfe2d30123456789abcdef"),
+            loan_id=credits[2]._id,
+            status="opened"
+        ),
+        CreditHistory(
+            _id=ObjectId("64bfe2d40123456789abcdef"),
+            loan_id=credits[3]._id,
+            status="opened"
+        ),
+        CreditHistory(
+            _id=ObjectId("64bfe2d50123456789abcdef"),
+            loan_id=credits[4]._id,
+            status="opened"
+        )
     ]
     
     clients = [
@@ -35,7 +123,7 @@ def create_sample_data():
                salary=1000000,
                self_employment_status="self-employed",
                owned_property=[Property(type="Квартира", value="1200000", legal="Квартира 5 м^2 в центре Петербурга по адресу наб. реки Карповки, д. 7")],
-               credit_history=[credit_history[0]]).save(),
+               credit_history=[credit_history[0],credit_history[2],credit_history[3]],).save(),
         Client(_id=ObjectId("64bfe2d80123456789abcdef"),
                name="Jane Usacheva Vladimirovna",
                email="jane@example.com",
