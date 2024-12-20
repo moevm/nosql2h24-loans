@@ -226,23 +226,24 @@ export default {
       }
     },
     saveName() {
-      const fio = localStorage.getItem('userName');
-      let fioParts = null;
-      if (fio) {
-        fioParts = fio.split(' ');
+      const fullName = localStorage.getItem('userName');
+      let nameParts = null;
+      if (fullName) {
+        nameParts = fullName.split(' ');
       }
-      if (!fioParts) {
-        const fullName = `${this.profile.lastName} ${this.profile.firstName} ${this.profile.middleName}`.trim();
-        localStorage.setItem('userName', fullName);
+      if (!nameParts || nameParts.length < 3) {
+        const newFullName = `${this.profile.lastName} ${this.profile.firstName} ${this.profile.middleName}`.trim();
+        localStorage.setItem('userName', newFullName);
       }
-      if ( fioParts.length < 3 || this.profile.lastName == '' || this.profile.firstName == '' || this.profile.middleName == ''){
+      if (nameParts.length < 3 || this.profile.lastName === '' || this.profile.firstName === '' || this.profile.middleName === '') {
         return;
       }
-      if (fioParts[0] !== this.profile.lastName || fioParts[1] !== this.profile.firstName || fioParts[2] !== this.profile.middleName) {
-        const fullName = `${this.profile.lastName} ${this.profile.firstName} ${this.profile.middleName}`.trim();
-        localStorage.setItem('userName', fullName);
+      if (nameParts[0] !== this.profile.lastName || nameParts[1] !== this.profile.firstName || nameParts[2] !== this.profile.middleName) {
+        const newFullName = `${this.profile.lastName} ${this.profile.firstName} ${this.profile.middleName}`.trim();
+        localStorage.setItem('userName', newFullName);
       }
     },
+
     addProperty() {
       this.profile.properties.push({ type: "", value: 0, legal: "" });
     },

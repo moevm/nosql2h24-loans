@@ -7,7 +7,7 @@
       <li v-if="isClient"><router-link to="/client/request">Заявки</router-link></li>
       <li v-if="isAdmin"><router-link to="/admin/statistics">Cтатистика</router-link></li>
       <li v-if="isAdmin"><router-link to="/admin/request">Заявки</router-link></li>
-      <!-- <li v-if="isAdmin"><router-link to="/admin/main">История</router-link></li> -->
+      <li v-if="isAdmin"><router-link to="/history">История</router-link></li>
       <li v-if="isClient && !isOnProfilePage"><router-link to="/client/profile">{{ userName }}</router-link></li>
       <li v-if="isAdmin && !isOnProfilePage"><router-link to="/admin/profile">{{ userName }}</router-link></li>
       <li v-if="isClient && isOnProfilePage"><a href="#" @click.prevent="logout">Выход</a></li>
@@ -27,7 +27,7 @@ export default {
       return localStorage.getItem('userType') === 'admin';
     },
     userName() {
-      return localStorage.getItem('userName') || 'Пользователь';
+      return localStorage.getItem('userName') || 'Не найдено';
     },
     isOnProfilePage() {
       return this.$route.path === '/client/profile' || this.$route.path === '/admin/profile';

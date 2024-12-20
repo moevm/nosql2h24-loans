@@ -1,6 +1,8 @@
 <template>
-  <div class="client-credit">
-    <h1>Активные кредиты</h1>
+  <div class="client-credit-history">
+    <h3>Кредиты пользователя {{ result.full_name }}</h3>
+    <h3>Контактный номер: {{ result.phone }}</h3>
+    <h3>Email: {{ result.email }}</h3>
     <div class="button-container">
       <Button text="Отменить фильтрацию и сортировку" @click="resetFilters" buttonType="button" />
       <Button text="Применить фильтры" @click="applyFilters" buttonType="button" />
@@ -128,52 +130,62 @@
               </div>
             </div>
           </th>
-          <th></th> 
+          <th>
+            <div>
+                <input type="checkbox" v-model="status" value="opened" />
+                <label>opened</label>
+              </div>
+              <div>
+                <input type="checkbox" v-model="status" value="closed" />
+                <label>closed</label>
+              </div>
+          </th> 
         </tr>
         <tr>
-          <th @click="sortCredits('loan_name')">
+          <th @click="sortResult('loan_name')">
             Название кредита
             <SortArrow :sortDirection="sortDirection.loan_name" />
           </th>
-          <th @click="sortCredits('opening_date')">
+          <th @click="sortResult('opening_date')">
             Дата открытия
             <SortArrow :sortDirection="sortDirection.opening_date" />
           </th>
-          <th @click="sortCredits('amount')">
+          <th @click="sortResult('amount')">
             Сумма
             <SortArrow :sortDirection="sortDirection.amount" />
           </th>
-          <th @click="sortCredits('interest_rate')">
+          <th @click="sortResult('interest_rate')">
             Ставка
             <SortArrow :sortDirection="sortDirection.interest_rate" />
           </th>
-          <th @click="sortCredits('expiration_time')">
+          <th @click="sortResult('expiration_time')">
             Срок
             <SortArrow :sortDirection="sortDirection.expiration_time" />
           </th>
-          <th @click="sortCredits('monthly_payment')">
+          <th @click="sortResult('monthly_payment')">
             Ежемесячный платеж
             <SortArrow :sortDirection="sortDirection.monthly_payment" />
           </th>
-          <th @click="sortCredits('next_payment_date')">
+          <th @click="sortResult('next_payment_date')">
             Дата следующего платежа
             <SortArrow :sortDirection="sortDirection.next_payment_date" />
           </th>
-          <th @click="sortCredits('debt')">
+          <th @click="sortResult('debt')">
             Задолженность
             <SortArrow :sortDirection="sortDirection.debt" />
           </th>
-          <th @click="sortCredits('payments_overdue')">
+          <th @click="sortResult('payments_overdue')">
             Просрочено
             <SortArrow :sortDirection="sortDirection.payments_overdue" />
           </th>
-          <th>
-            Ссылка
+          <th @click="sortResult('status')">
+            Статус
+            <SortArrow :sortDirection="sortDirection.status" />
           </th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="credit in credits" :key="credit._id">
+        <tr v-for="credit in result.credit_history" :key="credit._id">
           <td>{{ credit.loan_name }}</td>
           <td>{{ formatDateTime(credit.opening_date) }}</td>
           <td>{{ credit.amount }}</td>
@@ -183,9 +195,7 @@
           <td>{{ formatDate(credit.next_payment_date) }}</td>
           <td>{{ credit.debt }}</td>
           <td>{{ credit.payments_overdue }}</td>
-          <td>
-            <button @click="goToCreditDetail(credit._id)">🔗</button>
-          </td>
+          <td>{{ credit.status }}</td>
         </tr>
       </tbody>
     </table>
@@ -203,7 +213,7 @@ import Notification from '../../components/Notification.vue';
 import SortArrow from '../../components/SortArrow.vue';
 
 export default {
-  name: 'ClientCredit',
+  name: 'ClientCreditHistory',
   components: {
     Button,
     SortArrow,
@@ -211,8 +221,9 @@ export default {
   },
   data() {
     return {
-      credits: [],
+      result: [],
       loan_name: [],
+      status: [],
       filters: {
         opening_date_from: '',
         opening_date_to: '',
@@ -236,6 +247,7 @@ export default {
       isNotificationVisible: false,
       sortDirection: {
         loan_name: 0,
+        status: 0,
         opening_date: 0,
         amount: 0,
         interest_rate: 0,
@@ -249,28 +261,29 @@ export default {
     };
   },
   created() {
-    this.getCredits();
+    this.getResult();
   },
   mounted() {
     document.title = "Кредиты";
   },
   methods: {
-    async getCredits() {
-      const userId = localStorage.getItem('userId');
+    async getResult() {
+      const userId = this.$route.query.client_id;
       try {
-        const response = await axios.get('http://127.0.0.1:5000/get_active_credits', {
+        const response = await axios.get('http://127.0.0.1:5000/get_credit_history_details', {
           params: {
             client_id: userId
           }
         });
-        this.credits = response.data;
+        this.result = response.data;
       } catch (error) {
         console.error('Ошибка при получении заявок:', error);
       }
     },
 
-    resetFilters(flag=true) {
+    resetFilters(flag = true) {
       this.loan_name = [];
+      this.status = [];
       this.filters = {
         opening_date_from: '',
         opening_date_to: '',
@@ -290,7 +303,7 @@ export default {
         payments_overdue_to: ''
       };
       if (flag)
-        this.getCredits();
+        this.getResult();
     },
 
     validateFilters() {
@@ -332,6 +345,7 @@ export default {
         this.showNotification('Количество просроченных платежей "от" не может быть больше "до"!', 'error');
         return false;
       }
+
       return true;
     },
 
@@ -339,17 +353,18 @@ export default {
       if (!this.validateFilters()) return;
       const filter = {
         loan_name: this.loan_name.join('@'),
+        status: this.status.join('@'),
         ...this.filters
       };
-      const userId = localStorage.getItem('userId');
+      const userId = this.$route.query.client_id;
       try {
-        const response = await axios.get('http://127.0.0.1:5000/filter_active_credits', {
+        const response = await axios.get('http://127.0.0.1:5000/filter_credit_history', {
           params: {
             client_id: userId,
             ...filter
           }
         });
-        this.credits = response.data;
+        this.result.credit_history = response.data;
         this.showNotification('Фильтры успешно применены!', 'success');
       } catch (error) {
         this.showNotification('Ошибка при применении фильтров!', 'error');
@@ -361,17 +376,17 @@ export default {
       this.isNotificationVisible = false;
     },
 
-    async fetchCredits() {
-      const userId = localStorage.getItem('userId');
+    async fetchResult() {
+      const userId = this.$route.query.client_id;
       try {
-        const response = await axios.get('http://127.0.0.1:5000/sort_active_credits', {
+        const response = await axios.get('http://127.0.0.1:5000/sort_user_credit_history', {
           params: {
             client_id: userId,
             sort_field: this.sortField,
             sort_direction: this.sortDirection[this.sortField]
           }
         });
-        this.credits = response.data;
+        this.result.credit_history = response.data;
         this.resetFilters(false);
       } catch (error) {
         this.showNotification('Ошибка при применении сортировки!', 'error');
@@ -379,7 +394,7 @@ export default {
       }
     },
 
-    sortCredits(field) {
+    sortResult(field) {
       const previousSortDirection = this.sortDirection[field];
       if (this.sortField === field) {
         this.sortDirection[field] = previousSortDirection === 1 ? -1 : 1;
@@ -392,7 +407,7 @@ export default {
           this.sortDirection[key] = 0;
         }
       });
-      this.fetchCredits();
+      this.fetchResult();
     },
 
     showNotification(message, type) {
@@ -419,11 +434,6 @@ export default {
         second: '2-digit'
       };
       return new Date(date).toLocaleDateString('ru-RU', options);
-    },
-    
-    goToCreditDetail(creditId) {
-      localStorage.setItem('creditId', creditId);
-      this.$router.push('/credit');
     }
   }
 };
@@ -431,7 +441,7 @@ export default {
 </script>
 
 <style scoped>
-.client-credit {
+.client-credit-history {
   width: 100%;
   max-width: 2000px;
   margin: auto;

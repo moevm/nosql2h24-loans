@@ -83,11 +83,11 @@ export default {
   data() {
     return {
       loanAmount: '',
-      minLoanAmount: 10000,
-      maxLoanAmount: 500000,
+      minLoanAmount: 0,
+      maxLoanAmount: 0,
       expirationTime: '',
-      minExpirationTime: 6,
-      maxExpirationTime: 36,
+      minExpirationTime: 0,
+      maxExpirationTime: 0,
       expirationTerms: [],
       deposit: '',
       clientId: localStorage.getItem('userId') || null,
@@ -103,12 +103,59 @@ export default {
     }
   },
   created() {
+    this.setLoanParameters();
     this.expirationTerms = this.generateExpirationTerms();
   },
   mounted() {
     document.title = "Оформление заявки на кредит";
   },
   methods: {
+    setLoanParameters() {
+      switch (this.loanType) {
+        case 'Молодежный кредит':
+          this.minLoanAmount = 10000;
+          this.maxLoanAmount = 6000000;
+          this.minExpirationTime = 6;
+          this.maxExpirationTime = 25 * 12;
+          break;
+        case 'Ипотека':
+          this.minLoanAmount = 500000;
+          this.maxLoanAmount = 30000000;
+          this.minExpirationTime = 6;
+          this.maxExpirationTime = 30 * 12;
+          break;
+        case 'Кредит наличными':
+          this.minLoanAmount = 10000;
+          this.maxLoanAmount = 30000000;
+          this.minExpirationTime = 6;
+          this.maxExpirationTime = 15 * 12;
+          break;
+        case 'Автокредит':
+          this.minLoanAmount = 100000;
+          this.maxLoanAmount = 8000000;
+          this.minExpirationTime = 6;
+          this.maxExpirationTime = 5 * 12;
+          break;
+        case 'Рефинансирование':
+          this.minLoanAmount = 10000;
+          this.maxLoanAmount = 5000000;
+          this.minExpirationTime = 6;
+          this.maxExpirationTime = 5 * 12;
+          break;
+        case 'Кредитная карта':
+          this.minLoanAmount = 10000;
+          this.maxLoanAmount = 1000000;
+          this.minExpirationTime = 6;
+          this.maxExpirationTime = 12;
+          break;
+        default:
+          this.minLoanAmount = 10000;
+          this.maxLoanAmount = 500000;
+          this.minExpirationTime = 6;
+          this.maxExpirationTime = 36;
+          break;
+      }
+    },
     generateExpirationTerms() {
       const terms = [];
       for (let i = this.minExpirationTime; i <= this.maxExpirationTime; i += 6) {
@@ -137,15 +184,25 @@ export default {
       const years = Math.floor(term / 12);
       const months = term % 12;
       let termString = '';
+
       if (years > 0) {
-        termString += `${years} ${years === 1 ? 'год' : 'года'}`;
+        termString += `${years} ${this.declension(years, ['год', 'года', 'лет'])}`;
         if (months > 0) {
-          termString += ` ${months} ${months === 1 ? 'месяц' : 'месяца'}`;
+          termString += ` и ${months} ${this.declension(months, ['месяц', 'месяца', 'месяцев'])}`;
         }
       } else {
-        termString += `${months} ${months === 1 ? 'месяц' : 'месяца'}`;
+        termString += `${months} ${this.declension(months, ['месяц', 'месяца', 'месяцев'])}`;
       }
+
       return termString;
+    },
+    declension(num, words) {
+      num = Math.abs(num) % 100;
+      const n = num % 10;
+      if (num > 10 && num < 20) return words[2];
+      if (n > 1 && n < 5) return words[1];
+      if (n === 1) return words[0];
+      return words[2];
     },
 
     async submitApplication() {

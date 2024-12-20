@@ -3,7 +3,7 @@
     <h1>Детали заявки</h1>
     <div v-if="request">
       <div><strong>Название кредита:</strong> {{ request.loan_name }}</div>
-      <div><strong>Дата заявки:</strong> {{ formatDate(request.request_time) }}</div>
+      <div><strong>Дата заявки:</strong> {{ formatDateTime(request.request_time) }}</div>
       <div><strong>Статус:</strong> {{ request.status }}</div>
       <div><strong>Сумма:</strong> {{ request.amount }} руб.</div>
       <div><strong>Ставка:</strong> {{ request.interest_rate }} %</div>
@@ -44,6 +44,9 @@ export default {
   created() {
     this.getRequestDetails();
   },
+  mounted() {
+    document.title = "Детали заявки";
+  },
   methods: {
     async getRequestDetails() {
       try {
@@ -59,7 +62,7 @@ export default {
         console.log('Ошибка при получении данных заявки:', error);
       }
     },
-    formatDate(date) {
+    formatDateTime(date) {
       const options = {
         year: 'numeric',
         month: 'long',

@@ -1,6 +1,12 @@
 <template>
-  <div class="client-credit">
-    <h1>Активные кредиты</h1>
+  <div class="admin-history">
+    <Notification
+      :message="notificationMessage"
+      :type="notificationType"
+      :visible="isNotificationVisible"
+      @close="closeNotification"
+    />
+    <h1>История взаимодействия</h1>
     <div class="button-container">
       <Button text="Отменить фильтрацию и сортировку" @click="resetFilters" buttonType="button" />
       <Button text="Применить фильтры" @click="applyFilters" buttonType="button" />
@@ -8,6 +14,14 @@
     <table class="extended-table">
       <thead>
         <tr>
+          <th>
+            <div class="filter-options">
+              <div>
+                <label for="fio">ФИО:</label>
+                <input type="text" v-model="filters.fio" id="fio" required />
+              </div>
+            </div>
+          </th>
           <th>
             <div class="filter-options">
               <div>
@@ -38,9 +52,16 @@
           </th>
           <th>
             <div class="filter-options">
-              <input type="date" v-model="filters.opening_date_from" />
+              <input type="date" v-model="filters.request_time_from" />
               <span>—</span>
-              <input type="date" v-model="filters.opening_date_to" />
+              <input type="date" v-model="filters.request_time_to" />
+            </div>
+          </th>
+          <th>
+            <div class="filter-options">
+              <input type="date" v-model="filters.processing_date_from" />
+              <span>—</span>
+              <input type="date" v-model="filters.processing_date_to" />
             </div>
           </th>
           <th>
@@ -85,117 +106,85 @@
           <th>
             <div class="filter-options">
               <div class="filter-input-wrapper">
-                <input type="number" v-model="filters.monthly_payment_from" placeholder="от" class="filter-input" :min="0"/>
-                <span class="unit">руб.</span>
+                <input type="number" v-model="filters.rating_from" placeholder="от" class="filter-input" :min="0"/>
+                <span class="unit"></span>
               </div>
               <span>—</span>
               <div class="filter-input-wrapper">
-                <input type="number" v-model="filters.monthly_payment_to" placeholder="до" class="filter-input" :min="0"/>
-                <span class="unit">руб.</span>
+                <input type="number" v-model="filters.rating_to" placeholder="до" class="filter-input" :min="0"/>
+                <span class="unit"></span>
               </div>
             </div>
           </th>
           <th>
             <div class="filter-options">
-              <input type="date" v-model="filters.next_payment_date_from" />
-              <span>—</span>
-              <input type="date" v-model="filters.next_payment_date_to" />
-            </div>
-          </th>
-          <th>
-            <div class="filter-options">
-              <div class="filter-input-wrapper">
-                <input type="number" v-model="filters.debt_from" placeholder="от" class="filter-input" :min="0"/>
-                <span class="unit">руб.</span>
+              <div>
+                <input type="checkbox" v-model="decision" value="true" />
+                <label>Одобрено</label>
               </div>
-              <span>—</span>
-              <div class="filter-input-wrapper">
-                <input type="number" v-model="filters.debt_to" placeholder="до" class="filter-input" :min="0"/>
-                <span class="unit">руб.</span>
+              <div>
+                <input type="checkbox" v-model="decision" value="false" />
+                <label>Отказано</label>
               </div>
             </div>
           </th>
-          <th>
-            <div class="filter-options">
-              <div class="filter-input-wrapper">
-                <input type="number" v-model="filters.payments_overdue_from" placeholder="от" class="filter-input" :min="0"/>
-                <span class="unit">платежей</span>
-              </div>
-              <span>—</span>
-              <div class="filter-input-wrapper">
-                <input type="number" v-model="filters.payments_overdue_to" placeholder="до" class="filter-input" :min="0"/>
-                <span class="unit">платежей</span>
-              </div>
-            </div>
-          </th>
-          <th></th> 
         </tr>
         <tr>
-          <th @click="sortCredits('loan_name')">
+          <th @click="sortHistory('fio')">
+            ФИО клиента
+            <SortArrow :sortDirection="sortDirection.fio" />
+          </th>
+          <th @click="sortHistory('loan_name')">
             Название кредита
             <SortArrow :sortDirection="sortDirection.loan_name" />
           </th>
-          <th @click="sortCredits('opening_date')">
-            Дата открытия
-            <SortArrow :sortDirection="sortDirection.opening_date" />
+          <th @click="sortHistory('request_time')">
+            Дата заявки
+            <SortArrow :sortDirection="sortDirection.request_time" />
           </th>
-          <th @click="sortCredits('amount')">
+          <th @click="sortHistory('processing_date')">
+            Дата обработки
+            <SortArrow :sortDirection="sortDirection.processing_date" />
+          </th>
+          <th @click="sortHistory('amount')">
             Сумма
             <SortArrow :sortDirection="sortDirection.amount" />
           </th>
-          <th @click="sortCredits('interest_rate')">
+          <th @click="sortHistory('interest_rate')">
             Ставка
             <SortArrow :sortDirection="sortDirection.interest_rate" />
           </th>
-          <th @click="sortCredits('expiration_time')">
+          <th @click="sortHistory('expiration_time')">
             Срок
             <SortArrow :sortDirection="sortDirection.expiration_time" />
           </th>
-          <th @click="sortCredits('monthly_payment')">
-            Ежемесячный платеж
-            <SortArrow :sortDirection="sortDirection.monthly_payment" />
+          <th @click="sortHistory('rating')">
+            Рейтинг
+            <SortArrow :sortDirection="sortDirection.rating" />
           </th>
-          <th @click="sortCredits('next_payment_date')">
-            Дата следующего платежа
-            <SortArrow :sortDirection="sortDirection.next_payment_date" />
-          </th>
-          <th @click="sortCredits('debt')">
-            Задолженность
-            <SortArrow :sortDirection="sortDirection.debt" />
-          </th>
-          <th @click="sortCredits('payments_overdue')">
-            Просрочено
-            <SortArrow :sortDirection="sortDirection.payments_overdue" />
-          </th>
-          <th>
-            Ссылка
+          <th @click="sortHistory('decision')">
+            Решение
+            <SortArrow :sortDirection="sortDirection.decision" />
           </th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="credit in credits" :key="credit._id">
-          <td>{{ credit.loan_name }}</td>
-          <td>{{ formatDateTime(credit.opening_date) }}</td>
-          <td>{{ credit.amount }}</td>
-          <td>{{ credit.interest_rate }}</td>
-          <td>{{ credit.expiration_time }}</td>
-          <td>{{ credit.monthly_payment }}</td>
-          <td>{{ formatDate(credit.next_payment_date) }}</td>
-          <td>{{ credit.debt }}</td>
-          <td>{{ credit.payments_overdue }}</td>
-          <td>
-            <button @click="goToCreditDetail(credit._id)">🔗</button>
-          </td>
+        <tr v-for="history in histories" :key="history._id">
+          <td><router-link :to="{ path: '/client_credit_history', query: { client_id: history.client_id } }">{{ history.fio }}</router-link></td>
+          <td>{{ history.loan_name }}</td>
+          <td>{{ formatDateTime(history.request_time) }}</td>
+          <td>{{ formatDateTime(history.processing_date) }}</td>
+          <td>{{ history.amount }}</td>
+          <td>{{ history.interest_rate }}</td>
+          <td>{{ history.expiration_time }}</td>
+          <td>{{ history.rating }}</td>
+          <td>{{ formatDecision(history.decision) }}</td>
         </tr>
       </tbody>
     </table>
-    <Notification 
-      :message="notificationMessage" 
-      :type="notificationType" 
-      :visible="isNotificationVisible" 
-      @close="closeNotification" />
   </div>
 </template>
+
 <script>
 import axios from 'axios';
 import Button from '../../components/Button.vue';
@@ -203,7 +192,7 @@ import Notification from '../../components/Notification.vue';
 import SortArrow from '../../components/SortArrow.vue';
 
 export default {
-  name: 'ClientCredit',
+  name: 'History',
   components: {
     Button,
     SortArrow,
@@ -211,86 +200,84 @@ export default {
   },
   data() {
     return {
-      credits: [],
       loan_name: [],
+      histories: [],
+      decision: [],
       filters: {
-        opening_date_from: '',
-        opening_date_to: '',
+        fio: '',
+        request_time_from: '',
+        request_time_to: '',
+        processing_date_from: '',
+        processing_date_to: '',
         amount_from: '',
         amount_to: '',
         interest_rate_from: '',
         interest_rate_to: '',
         expiration_time_from: '',
         expiration_time_to: '',
-        monthly_payment_from: '',
-        monthly_payment_to: '',
-        next_payment_date_from: '',
-        next_payment_date_to: '',
-        debt_from: '',
-        debt_to: '',
-        payments_overdue_from: '',
-        payments_overdue_to: ''
+        rating_from: '',
+        rating_to: ''
       },
       notificationMessage: '',
       notificationType: 'error',
       isNotificationVisible: false,
       sortDirection: {
+        fio: 0,
         loan_name: 0,
-        opening_date: 0,
+        request_time: 0,
+        processing_date: 0,
         amount: 0,
         interest_rate: 0,
         expiration_time: 0,
-        monthly_payment: 0,
-        next_payment_date: 0,
-        debt: 0,
-        payments_overdue: 0
+        rating: 0,
+        decision: 0
       },
-      sortField: 'loan_name'
+      sortField: 'fio'
     };
   },
   created() {
-    this.getCredits();
+    this.getHistory();
   },
   mounted() {
-    document.title = "Кредиты";
+    document.title = "История взаимодействия";
   },
   methods: {
-    async getCredits() {
+    async getHistory() {
       const userId = localStorage.getItem('userId');
       try {
-        const response = await axios.get('http://127.0.0.1:5000/get_active_credits', {
+        const response = await axios.get('http://127.0.0.1:5000/get_interactions', {
           params: {
-            client_id: userId
+            admin_id: userId
           }
         });
-        this.credits = response.data;
+        this.histories = response.data;
       } catch (error) {
-        console.error('Ошибка при получении заявок:', error);
+        this.showNotification('Ошибка при получении истории заявок!', 'error');
+        console.error('Ошибка при получении истории заявок:', error);
       }
     },
 
     resetFilters(flag=true) {
       this.loan_name = [];
+      this.decision = [];
       this.filters = {
-        opening_date_from: '',
-        opening_date_to: '',
+        fio: '',
+        request_time_from: '',
+        request_time_to: '',
+        processing_date_from: '',
+        processing_date_to: '',
         amount_from: '',
         amount_to: '',
         interest_rate_from: '',
         interest_rate_to: '',
         expiration_time_from: '',
         expiration_time_to: '',
-        monthly_payment_from: '',
-        monthly_payment_to: '',
-        next_payment_date_from: '',
-        next_payment_date_to: '',
-        debt_from: '',
-        debt_to: '',
-        payments_overdue_from: '',
-        payments_overdue_to: ''
+        rating_from: '',
+        rating_to: ''
       };
-      if (flag)
-        this.getCredits();
+      if (flag) {
+        this.getHistory();
+      }
     },
 
     validateFilters() {
@@ -303,6 +290,7 @@ export default {
         this.showNotification('Ставка "от" не может быть больше ставки "до"!', 'error');
         return false;
       }
+
       if (this.filters.interest_rate_to > 100) {
         this.showNotification('Ставка не может быть больше 100 %!', 'error');
         return false;
@@ -313,65 +301,74 @@ export default {
         return false;
       }
 
-      if (this.filters.opening_date_from && this.filters.opening_date_to && this.filters.opening_date_from > this.filters.opening_date_to) {
-        this.showNotification('Дата начала не может быть больше даты окончания!', 'error');
+      if (this.filters.request_time_from && this.filters.request_time_to && new Date(this.filters.request_time_from) > new Date(this.filters.request_time_to)) {
+        this.showNotification('Дата запроса "от" не может быть больше даты запроса "до"!', 'error');
         return false;
       }
 
-      if (this.filters.monthly_payment_from && this.filters.monthly_payment_to && this.filters.monthly_payment_from > this.filters.monthly_payment_to) {
-        this.showNotification('Ежемесячный платеж "от" не может быть больше платежа "до"!', 'error');
+      if (this.filters.processing_date_from && this.filters.processing_date_to && new Date(this.filters.processing_date_from) > new Date(this.filters.processing_date_to)) {
+        this.showNotification('Дата обработки "от" не может быть больше даты обработки "до"!', 'error');
         return false;
       }
 
-      if (this.filters.debt_from && this.filters.debt_to && this.filters.debt_from > this.filters.debt_to) {
-        this.showNotification('Задолженность "от" не может быть больше задолженности "до"!', 'error');
+      if (this.filters.rating_from && this.filters.rating_to && this.filters.rating_from > this.filters.rating_to) {
+        this.showNotification('Рейтинг "от" не может быть больше рейтинга "до"!', 'error');
         return false;
       }
 
-      if (this.filters.payments_overdue_from && this.filters.payments_overdue_to && this.filters.payments_overdue_from > this.filters.payments_overdue_to) {
-        this.showNotification('Количество просроченных платежей "от" не может быть больше "до"!', 'error');
-        return false;
-      }
       return true;
     },
 
     async applyFilters() {
-      if (!this.validateFilters()) return;
-      const filter = {
-        loan_name: this.loan_name.join('@'),
-        ...this.filters
-      };
+      if (!this.validateFilters()) {
+        return;
+      }
+      this.filters.loan_name = this.loan_name.join('@');
+      this.filters.decision = this.decision.join('@');
+      const filter = this.filters;
       const userId = localStorage.getItem('userId');
       try {
-        const response = await axios.get('http://127.0.0.1:5000/filter_active_credits', {
+        const response = await axios.get('http://127.0.0.1:5000/filter_interaction_history', {
           params: {
-            client_id: userId,
+            admin_id: userId,
             ...filter
           }
         });
-        this.credits = response.data;
-        this.showNotification('Фильтры успешно применены!', 'success');
+        this.histories = response.data;
+        if (!this.isNotificationVisible) {
+          this.showNotification('Фильтры успешно применены!', 'success');
+        }
       } catch (error) {
-        this.showNotification('Ошибка при применении фильтров!', 'error');
+        if (!this.isNotificationVisible) {
+          this.showNotification('Ошибка при применении фильтров!', 'error');
+        }
         console.error('Ошибка при применении фильтров:', error);
       }
+    },
+
+    showNotification(message, type, error_message = '') {
+      this.notificationMessage = message + " " + error_message;
+      this.notificationType = type;
+      this.isNotificationVisible = true;
     },
 
     closeNotification() {
       this.isNotificationVisible = false;
     },
 
-    async fetchCredits() {
+    async fetchHistory() {
       const userId = localStorage.getItem('userId');
+      const sortDirection = this.sortDirection;
+      const sortField = this.sortField;
       try {
-        const response = await axios.get('http://127.0.0.1:5000/sort_active_credits', {
+        const response = await axios.get('http://127.0.0.1:5000/sort_interaction_history', {
           params: {
-            client_id: userId,
-            sort_field: this.sortField,
-            sort_direction: this.sortDirection[this.sortField]
+            admin_id: userId,
+            sort_field: sortField,
+            sort_direction: sortDirection[sortField]
           }
         });
-        this.credits = response.data;
+        this.histories = response.data;
         this.resetFilters(false);
       } catch (error) {
         this.showNotification('Ошибка при применении сортировки!', 'error');
@@ -379,7 +376,7 @@ export default {
       }
     },
 
-    sortCredits(field) {
+    sortHistory(field) {
       const previousSortDirection = this.sortDirection[field];
       if (this.sortField === field) {
         this.sortDirection[field] = previousSortDirection === 1 ? -1 : 1;
@@ -392,23 +389,16 @@ export default {
           this.sortDirection[key] = 0;
         }
       });
-      this.fetchCredits();
+      this.fetchHistory();
     },
 
-    showNotification(message, type) {
-      this.notificationMessage = message;
-      this.notificationType = type;
-      this.isNotificationVisible = true;
+    formatDecision(decision) {
+      if (decision) {
+        return 'Одобрено';
+      }
+      return 'Отказано';  
     },
 
-    formatDate(date) {
-      const options = {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      };
-      return new Date(date).toLocaleDateString('ru-RU', options);
-    },
     formatDateTime(date) {
       const options = {
         year: 'numeric',
@@ -418,20 +408,14 @@ export default {
         minute: '2-digit',
         second: '2-digit'
       };
-      return new Date(date).toLocaleDateString('ru-RU', options);
-    },
-    
-    goToCreditDetail(creditId) {
-      localStorage.setItem('creditId', creditId);
-      this.$router.push('/credit');
+      return new Date(date).toLocaleString('ru-RU', options);
     }
   }
 };
-
 </script>
 
 <style scoped>
-.client-credit {
+.admin-history {
   width: 100%;
   max-width: 2000px;
   margin: auto;

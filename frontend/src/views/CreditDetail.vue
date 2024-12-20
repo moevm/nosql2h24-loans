@@ -3,7 +3,7 @@
     <h1>Детали кредита</h1>
     <div v-if="request">
       <div><strong>Название кредита:</strong> {{ request.loan_name }}</div>
-      <div><strong>Дата открытия:</strong> {{ formatDate(request.opening_date) }}</div>
+      <div><strong>Дата открытия:</strong> {{ formatDateTime(request.opening_date) }}</div>
       <div><strong>Сумма:</strong> {{ request.amount }} руб.</div>
       <div><strong>Ставка:</strong> {{ request.interest_rate }} %</div>
       <div><strong>Срок:</strong> {{ request.expiration_time }} мес.</div>
@@ -30,6 +30,9 @@ export default {
   created() {
     this.getCreditDetails();
   },
+  mounted() {
+    document.title = "Детали кредита";
+  },
   methods: {
     async getCreditDetails() {
       try {
@@ -44,7 +47,7 @@ export default {
         console.log('Ошибка при получении данных кредита:', error);
       }
     },
-    formatDate(date) {
+    formatDateTime(date) {
       const options = {
         year: 'numeric',
         month: 'long',
@@ -52,6 +55,14 @@ export default {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit'
+      };
+      return new Date(date).toLocaleString('ru-RU', options);
+    },
+    formatDate(date) {
+      const options = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
       };
       return new Date(date).toLocaleString('ru-RU', options);
     }

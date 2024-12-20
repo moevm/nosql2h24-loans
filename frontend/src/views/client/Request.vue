@@ -134,7 +134,7 @@
       <tbody>
         <tr v-for="request in requests" :key="request._id">
           <td>{{ request.loan_name }}</td>
-          <td>{{ formatDate(request.request_time) }}</td>
+          <td>{{ formatDateTime(request.request_time) }}</td>
           <td>{{ request.status }}</td>
           <td>{{ request.amount }}</td>
           <td>{{ request.interest_rate }}</td>
@@ -219,7 +219,7 @@ export default {
       }
     },
 
-    resetFilters() {
+    resetFilters(flag=true) {
       this.loan_name = [],
       this.status = [],
       this.filters = {
@@ -234,6 +234,7 @@ export default {
         term_from: '',
         term_to: ''
       };
+      if (flag)
       this.getRequests();
     },
 
@@ -316,6 +317,7 @@ export default {
           }
         });
         this.requests = response.data;
+        this.resetFilters(false);
       } catch (error) {
         this.notificationMessage = 'Ошибка при применении сортировки!';
         this.notificationType = 'error';
@@ -340,7 +342,7 @@ export default {
       this.fetchRequests();
     },
 
-    formatDate(date) {
+    formatDateTime(date) {
       const options = {
         year: 'numeric',
         month: 'long',

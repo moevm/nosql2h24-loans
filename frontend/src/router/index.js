@@ -12,6 +12,8 @@ import ClientLoanApplication from '../views/client/LoanApplication.vue';
 import Statistics from '../views/admin/Statistics.vue';
 import RequestDetail from '../views/RequestDetail.vue';
 import CreditDetail from '../views/CreditDetail.vue';
+import History from '../views/admin/History.vue';
+import ClientCreditHistory from '../views/admin/ClientCreditHistory.vue';
 
 const routes = [
   // { path: '/', redirect: '/login' },
@@ -24,6 +26,8 @@ const routes = [
   { path: '/admin/request', component: AdminRequest },
   { path: '/request', component: RequestDetail},
   { path: '/credit', component: CreditDetail },
+  { path: '/history', component: History },
+  { path: '/client_credit_history', component: ClientCreditHistory },
   { path: '/client/profile', component: ClientProfile },
   { path: '/admin/profile', component: AdminProfile },
   { path: '/admin/statistics', component: Statistics },

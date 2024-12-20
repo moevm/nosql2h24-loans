@@ -51,7 +51,6 @@
             </div>
           </th>
           <th>
-            <label for="date_from">Дата заявки</label>
             <div class="filter-options">
               <input type="date" v-model="filters.date_from" id="date_from" />
               <span>—</span>
@@ -148,9 +147,9 @@
       </thead>
       <tbody>
         <tr v-for="request in requests" :key="request.request_id">
-          <td>{{ request.fio }}</td>
+          <td><router-link :to="{ path: '/client_credit_history', query: { client_id: request.client_id } }">{{ request.fio }}</router-link></td>
           <td>{{ request.loan_name }}</td>
-          <td>{{ formatDate(request.request_time) }}</td>
+          <td>{{ formatDateTime(request.request_time) }}</td>
           <td>{{ request.amount }}</td>
           <td>{{ request.interest_rate }}</td>
           <td>{{ request.expiration_time }}</td>
@@ -250,7 +249,7 @@ export default {
       }
     },
 
-    resetFilters() {
+    resetFilters(flag=true) {
       this.loan_name = [];
       this.filters = {
         fio: '',
@@ -266,7 +265,8 @@ export default {
         rating_from: '',
         rating_to: ''
       };
-      this.getRequests();
+      if (flag)
+        this.getRequests();
     },
 
     validateFilters() {
@@ -342,6 +342,7 @@ export default {
           }
         });
         this.requests = response.data;
+        this.resetFilters(false);
       } catch (error) {
         this.showNotification('Ошибка при применении сортировки!', 'error');
         console.error('Ошибка при применении сортировки:', error);
@@ -364,7 +365,7 @@ export default {
       this.fetchRequests();
     },
 
-    formatDate(date) {
+    formatDateTime(date) {
       const options = {
         year: 'numeric',
         month: 'long',
