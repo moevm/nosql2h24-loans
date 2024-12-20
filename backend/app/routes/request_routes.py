@@ -7,6 +7,7 @@ from mongoengine import ObjectIdField
 from datetime import datetime
 from bson import ObjectId
 import random, string
+from dateutil.relativedelta import relativedelta
 
 bp = Blueprint('credit_request_routes', __name__)
 
@@ -73,12 +74,14 @@ def create_credit_request():
 
     interest_rate = generate_interest_rate(loan_name=loan_type, loan_amount=loan_amount, expiration_time=expiration_time)
     monthly_payment = round((1 + interest_rate / 100) * loan_amount / expiration_time, 2)
+    next_payment_date = datetime.utcnow() + relativedelta(months=1)
     new_credit = Credit(_id=ObjectId("".join(random.choices(string.hexdigits.lower(), k=24))),
                         loan_name=loan_type,
                         amount=loan_amount,
                         interest_rate=interest_rate,
                         deposit=deposit, 
                         monthly_payment=monthly_payment,
+                        next_payment_date=next_payment_date,
                         co_borrowers=[Coborrowers(name=coborrower['fio'], workplace=coborrower['workplace'], phone=coborrower['contactPhone'], post=coborrower['post'], passport_number=coborrower['passportNumber'], passport_series=coborrower['passportSeries']) for coborrower in co_borrowers],
                         expiration_time=expiration_time,
                         debt=loan_amount,
@@ -103,7 +106,7 @@ def get_all_credit_requests():
     result = [{"client_id": str(req.client_id), 
                "_id": str(req._id),
                "loan_name": Credit.objects(_id=req.loan_id).first().loan_name, 
-               "request_time": req.request_time.isoformat(), 
+               "request_time": req.request_time, 
                "status": req.status,
                "amount": Credit.objects(_id=req.loan_id).first().amount, 
                "interest_rate": Credit.objects(_id=req.loan_id).first().interest_rate,
@@ -142,10 +145,13 @@ def credit_request_decision():
     data = request.args
     print(f"Пришел запрос на решение заявки: ", data)
     status = data.get('decision')
+    answer = True
     if status == 'true':
         status = "approved"
+        answer = True
     else:
         status = "rejected"
+        answer = False
     request_id = data.get('request_id')
     admin_id = data.get('admin_id')
     credit_request = CreditRequest.objects(_id=request_id).first()
@@ -153,7 +159,7 @@ def credit_request_decision():
         _id=ObjectId("".join(random.choices(string.hexdigits.lower(), k=24))),
         processing_date = datetime.utcnow(),
         credit_request_id = request_id,
-        decision=status
+        decision=answer
     )
     
     credit_request.status = status
@@ -182,7 +188,7 @@ def admins_request():
                "fio": Client.objects(_id=req.client_id).first().name,
                "rating": Client.objects(_id=req.client_id).first().rating,
                "loan_name": Credit.objects(_id=req.loan_id).first().loan_name, 
-               "request_time": req.request_time.isoformat(), 
+               "request_time": req.request_time, 
                "status": req.status,
                "amount": Credit.objects(_id=req.loan_id).first().amount, 
                "interest_rate": Credit.objects(_id=req.loan_id).first().interest_rate,
@@ -215,7 +221,7 @@ def get_request_details():
 @bp.route('/get_credit_details', methods=['GET'])
 def get_credit_details():
     data = request.args
-    print("Пришел запрос на показ заявки с данными", data)
+    print("Пришел запрос на показ заявки с данными:", data)
     credit_id = data.get('creditId')
     credit = Credit.objects(_id=credit_id).first()
     
@@ -225,7 +231,41 @@ def get_credit_details():
         "amount" : credit.amount,
         "interest_rate" : credit.interest_rate,
         "expiration_time": credit.expiration_time,
+        "monthly_payment": credit.monthly_payment,
         "debt": credit.debt,
         "next_payment_date": credit.next_payment_date
     }
+    return jsonify(result), 200
+
+
+@bp.route('/get_credit_history_details', methods=["GET"])
+def get_credit_history_details():
+    data = request.args
+    print("Пришел запрос на получение кредитной истории пользвоателя с данными:", data)
+    client_id = data.get('client_id')
+    client = Client.objects(_id=client_id).first()
+    
+    result = {
+        "full_name": client.name,
+        "phone": client.phone,
+        "email": client.email,
+        "credit_history": []
+    }
+    
+    for history in client.credit_history:
+        current_credit = Credit.objects(_id=history.loan_id).first()
+        if current_credit:
+            result["credit_history"].append({
+                "loan_name": current_credit.loan_name,
+                "opening_date": current_credit.opening_date,
+                "amount": current_credit.amount,
+                "interest_rate": current_credit.interest_rate,
+                "expiration_time": current_credit.expiration_time,
+                "monthly_payment":current_credit.monthly_payment,
+                "next_payment_date": current_credit.next_payment_date,
+                "debt": current_credit.debt,
+                "payments_overdue": current_credit.payments_overdue,
+                "status": history.status
+            })
+    
     return jsonify(result), 200
