@@ -21,6 +21,7 @@ def login():
     admin = Admin.objects(email=email).first()
     client = Client.objects(email=email).first()
     
+    
     if admin and admin.password == password:
         token = generate_token(str(admin.id))
         return jsonify({"message": "Admin logged in successfully",
