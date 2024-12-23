@@ -13,7 +13,7 @@ def create_sample_data():
             _id=ObjectId("64bfe2e30123456789abcdef"),
             loan_name="Молодежный кредит",
             opening_date=datetime(2024, 9, 1),
-            amount=5000011,
+            amount=5000012,
             interest_rate=5.5,
             next_payment_date=datetime.now() + timedelta(days=10),
             monthly_payment=150,
